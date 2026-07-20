@@ -42,7 +42,7 @@ interface PfdDisplayData {
   environment: {
     isaC: number;
     oatC: number;
-    systemTime: string;
+    systemTime: Date;
     transponderCode: string;
     transponderMode: string;
   };
@@ -57,12 +57,13 @@ interface PfdDisplayData {
     com1Standby: string;
     com2Active: string;
     com2Standby: string;
+    comSource: 1 | 2;
     distanceNm: number;
     nav1Active: string;
     nav1Standby: string;
     nav2Active: string;
     nav2Standby: string;
-    navSource: string;
+    navSource: 1 | 2;
     waypoint: string;
   };
 }
@@ -87,7 +88,9 @@ const dummyPfdData: PfdDisplayData = {
   environment: {
     isaC: -6,
     oatC: 7,
-    systemTime: "00:04:45",
+    get systemTime() {
+      return new Date();
+    },
     transponderCode: "1200",
     transponderMode: "ALT",
   },
@@ -102,12 +105,13 @@ const dummyPfdData: PfdDisplayData = {
     com1Standby: "136.975",
     com2Active: "118.000",
     com2Standby: "118.000",
+    comSource: 1,
     distanceNm: 51.5,
     nav1Active: "108.00",
     nav1Standby: "117.95",
     nav2Active: "108.00",
     nav2Standby: "117.95",
-    navSource: "GPS",
+    navSource: 1,
     waypoint: "KORD",
   },
 };
@@ -443,6 +447,12 @@ interface SoftKeyActions {
   home: () => void;
 }
 
+interface CanvasTextItem {
+  color?: string;
+  text: string;
+  size?: number;
+}
+
 const softKeyPositions: SoftKeyPosition[] = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
 ];
@@ -767,7 +777,19 @@ export function PrimaryFlightDisplay({
       return;
     }
 
-    drawPfdCanvas(canvas, dummyPfdData, visibleSoftKeys);
+    const activeCanvas = canvas;
+    let animationFrameId = 0;
+
+    function redraw(): void {
+      drawPfdCanvas(activeCanvas, dummyPfdData, visibleSoftKeys);
+      animationFrameId = requestAnimationFrame(redraw);
+    }
+
+    animationFrameId = requestAnimationFrame(redraw);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
   }, [visibleSoftKeys]);
 
   function handleSoftKeyPress(key: SoftKey): void {
@@ -911,6 +933,169 @@ function drawPfdCanvas(
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   drawSoftKeyLabels(context, softKeys, canvas.width, canvas.height);
+  drawTemperatureInfo(
+    context,
+    canvas.width,
+    canvas.height,
+    data.environment.oatC,
+    data.environment.isaC,
+  );
+  drawXPDRTimeInfo(
+    context,
+    canvas.width,
+    canvas.height,
+    data.environment.systemTime,
+    data.environment.transponderCode,
+    data.environment.transponderMode,
+  );
+  drawNavStack(context, canvas.width, canvas.height, data.radios);
+  drawCommStack(context, canvas.width, canvas.height, data.radios);
+}
+
+function drawXPDRTimeInfo(
+  context: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  systemTime: Date,
+  transponderCode: string,
+  transponderMode: string,
+): void {
+  const rowHeight = 25;
+  const y = canvasHeight - rowHeight - 25; // Position above the soft key row
+
+  // Time Info Box
+  const timeWidth = 134;
+  const timeX = canvasWidth - timeWidth;
+  context.fillStyle = "#2B2C2F";
+  context.fillRect(timeX, y, timeWidth, rowHeight);
+  // Draw white border around the Time Info box
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.strokeRect(timeX, y, timeWidth, rowHeight);
+  // Draw Time Info text ("TIME left aligned to box, HH:MM:SS converted to UTC right aligned to box")
+  context.fillStyle = "#dce2e5";
+  context.font = "800 11px Inter, sans-serif";
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.fillText("UTC", timeX + 5, y + rowHeight / 2);
+  context.textAlign = "right";
+  const utcTimePart = systemTime.toUTCString().split(" ")[4] ?? ""; // Extract HH:MM:SS from UTC string
+  context.fillText(utcTimePart, timeX + timeWidth - 5, y + rowHeight / 2);
+
+  // XPDR Info Box
+  const xpdrWidth = 171;
+  const xpdrX = timeX - xpdrWidth;
+  context.fillStyle = "#2B2C2F";
+  context.fillRect(xpdrX, y, xpdrWidth, rowHeight);
+  // Draw white border around the XPDR Info box
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.strokeRect(xpdrX, y, xpdrWidth, rowHeight);
+  const isFlashing = Math.floor(Date.now() / 500) % 2 === 0; // Flash every 500ms
+  const isAltitudeReporting = transponderMode.toUpperCase() === "ALT";
+  const transponderCodeItem: CanvasTextItem = isAltitudeReporting
+    ? { color: "#4be17b", text: transponderCode }
+    : { text: transponderCode };
+  const transponderModeItem: CanvasTextItem = isAltitudeReporting
+    ? { color: "#4be17b", text: transponderMode }
+    : { text: transponderMode };
+
+  drawFlexTextRow(context, {
+    height: rowHeight,
+    items: [
+      { text: "XPDR" },
+      transponderCodeItem,
+      transponderModeItem,
+      { color: "#ffffff", text: isFlashing ? "R" : "" },
+    ],
+    paddingX: 6,
+    width: xpdrWidth,
+    x: xpdrX,
+    y,
+  });
+}
+
+function drawTemperatureInfo(
+  context: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  oatC: number,
+  isaC: number,
+): void {
+  const rowHeight = 25;
+  const y = canvasHeight - rowHeight - 25; // Position above the soft key row
+
+  // OAT Box
+  const oatWidth = 87;
+  const oatX = 0;
+  context.fillStyle = "#2B2C2F";
+  context.fillRect(oatX, y, oatWidth, rowHeight);
+  // Draw white border around the OAT box
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.strokeRect(oatX, y, oatWidth, rowHeight);
+  // Draw OAT text ("OAT left aligned to box, xºC right aligned to box")
+  context.fillStyle = "#dce2e5";
+  context.font = "800 11px Inter, sans-serif";
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.fillText("OAT", oatX + 5, y + rowHeight / 2);
+  context.textAlign = "right";
+  context.fillText(`${oatC}ºC`, oatX + oatWidth - 5, y + rowHeight / 2);
+  // ISA Box
+  const isaWidth = 87;
+  const isaX = oatX + oatWidth;
+  context.fillStyle = "#2B2C2F";
+  context.fillRect(isaX, y, isaWidth, rowHeight);
+  // Draw white border around the ISA box
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.strokeRect(isaX, y, isaWidth, rowHeight);
+  // Draw ISA text ("ISA left aligned to box, xºC right aligned to box")
+  context.fillStyle = "#dce2e5";
+  context.font = "800 11px Inter, sans-serif";
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.fillText("ISA", isaX + 5, y + rowHeight / 2);
+  context.textAlign = "right";
+  context.fillText(`${isaC}ºC`, isaX + isaWidth - 5, y + rowHeight / 2);
+}
+
+function drawFlexTextRow(
+  context: CanvasRenderingContext2D,
+  {
+    height,
+    items,
+    paddingX,
+    width,
+    x,
+    y,
+  }: {
+    height: number;
+    items: CanvasTextItem[];
+    paddingX: number;
+    width: number;
+    x: number;
+    y: number;
+  },
+): void {
+  const slotWidth = (width - paddingX * 2) / items.length;
+  const centerY = y + height / 2;
+
+  context.save();
+
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+
+  items.forEach((item, index) => {
+    context.font = `800 ${item.size ?? 11}px Inter, sans-serif`;
+    const centerX = x + paddingX + slotWidth * (index + 0.5);
+
+    context.fillStyle = item.color ?? "#dce2e5";
+    context.fillText(item.text, centerX, centerY, slotWidth - 4);
+  });
+
+  context.restore();
 }
 
 function drawSoftKeyLabels(
@@ -924,7 +1109,7 @@ function drawSoftKeyLabels(
 
   context.fillStyle = "#383A39";
   context.fillRect(0, y, canvasWidth, rowHeight);
-  context.strokeStyle = "#fffff";
+  context.strokeStyle = "#ffffff";
   context.lineWidth = 2;
   context.beginPath();
   context.moveTo(0, y);
@@ -959,15 +1144,219 @@ function drawSoftKeyLabels(
 
     context.fillStyle = "#dce2e5";
     context.fillText(key.label, centerX, labelY);
-
-    if (hasChildren(key)) {
-      context.fillStyle = "#88d8ff";
-      context.fillRect(centerX - 16, labelY + 13, 32, 2);
-    }
   }
 
   context.textAlign = "start";
   context.textBaseline = "alphabetic";
+}
+
+function drawNavStack(
+  context: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  radios: PfdDisplayData["radios"],
+): void {
+  const row1Height = 58 / 2;
+  const row2Height = 58 / 2;
+  const row1Y = 0;
+  const row2Y = 0 + row1Height;
+  const rowWidth = 265;
+  const frequencyX = 41;
+  const frequencyWidth = rowWidth - frequencyX;
+  const frequencyPaddingX = 5;
+
+  // Draw the nav stack
+  context.fillStyle = "#2B2C2F";
+  context.fillRect(0, row1Y, rowWidth, row1Height + row2Height);
+  //Draw right border of the nav stack
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(rowWidth, row1Y);
+  context.lineTo(rowWidth, row1Y + row1Height + row2Height);
+  context.stroke();
+
+  // Draw Nav1 text
+  const fontSize = 11;
+  context.fillStyle = "#dce2e5";
+  context.font = `800 ${fontSize}px Inter, sans-serif`;
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.fillText("NAV1", 5, row1Y + row1Height - fontSize);
+
+  // Draw Nav1 frequency
+  drawFlexTextRow(context, {
+    height: row1Height,
+    items: [
+      { text: radios.nav1Active, size: 13 },
+      { text: "↔" },
+      { text: radios.nav1Standby, size: 13 },
+    ],
+    paddingX: frequencyPaddingX,
+    width: frequencyWidth,
+    x: frequencyX,
+    y: row1Y,
+  });
+
+  // Draw Nav2 text
+  context.fillStyle = "#dce2e5";
+  context.font = `800 ${fontSize}px Inter, sans-serif`;
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.fillText("NAV2", 5, row2Y + row2Height - fontSize);
+
+  // Draw Nav2 frequency
+  drawFlexTextRow(context, {
+    height: row2Height,
+    items: [
+      { text: radios.nav2Active, size: 13 },
+      { text: "↔" },
+      { text: radios.nav2Standby, size: 13 },
+    ],
+    paddingX: frequencyPaddingX,
+    width: frequencyWidth,
+    x: frequencyX,
+    y: row2Y,
+  });
+
+  drawActiveNavFrequencyBox(context, {
+    height: radios.navSource === 1 ? row1Height : row2Height,
+    itemCount: 3,
+    paddingX: frequencyPaddingX,
+    slotIndex: 0,
+    width: frequencyWidth,
+    x: frequencyX,
+    y: radios.navSource === 1 ? row1Y : row2Y,
+  });
+}
+
+function drawCommStack(
+  context: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  radios: PfdDisplayData["radios"],
+): void {
+  const row1Height = 58 / 2;
+  const row2Height = 58 / 2;
+  const row1Y = 0;
+  const row2Y = 0 + row1Height;
+  const rowWidth = 265;
+  const frequencyX = canvasWidth - rowWidth + 41;
+  const frequencyWidth = rowWidth - 41;
+  const frequencyPaddingX = 5;
+
+  // Draw the comm stack
+  context.fillStyle = "#2B2C2F";
+  context.fillRect(
+    canvasWidth - rowWidth,
+    row1Y,
+    rowWidth,
+    row1Height + row2Height,
+  );
+  //Draw left border of the comm stack
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(canvasWidth - rowWidth, row1Y);
+  context.lineTo(canvasWidth - rowWidth, row1Y + row1Height + row2Height);
+  context.stroke();
+
+  // Draw Comm1 text
+  const fontSize = 11;
+  context.fillStyle = "#dce2e5";
+  context.font = `800 ${fontSize}px Inter, sans-serif`;
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.fillText(
+    "COMM1",
+    canvasWidth - rowWidth + 5,
+    row1Y + row1Height - fontSize,
+  );
+
+  // Draw Comm1 frequency
+  drawFlexTextRow(context, {
+    height: row1Height,
+    items: [
+      { text: radios.com1Active, size: 13 },
+      { text: "↔" },
+      { text: radios.com1Standby, size: 13 },
+    ],
+    paddingX: frequencyPaddingX,
+    width: frequencyWidth,
+    x: frequencyX,
+    y: row1Y,
+  });
+
+  // Draw Comm2 text
+  context.fillStyle = "#dce2e5";
+  context.font = `800 ${fontSize}px Inter, sans-serif`;
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.fillText(
+    "COMM2",
+    canvasWidth - rowWidth + 5,
+    row2Y + row2Height - fontSize,
+  );
+
+  // Draw Comm2 frequency
+  drawFlexTextRow(context, {
+    height: row2Height,
+    items: [
+      { text: radios.com2Active, size: 13 },
+      { text: "↔" },
+      { text: radios.com2Standby, size: 13 },
+    ],
+    paddingX: frequencyPaddingX,
+    width: frequencyWidth,
+    x: frequencyX,
+    y: row2Y,
+  });
+
+  drawActiveNavFrequencyBox(context, {
+    height: radios.comSource === 1 ? row1Height : row2Height,
+    itemCount: 3,
+    paddingX: frequencyPaddingX,
+    slotIndex: 0,
+    width: frequencyWidth,
+    x: frequencyX,
+    y: radios.comSource === 1 ? row1Y : row2Y,
+  });
+}
+
+function drawActiveNavFrequencyBox(
+  context: CanvasRenderingContext2D,
+  {
+    height,
+    itemCount,
+    paddingX,
+    slotIndex,
+    width,
+    x,
+    y,
+  }: {
+    height: number;
+    itemCount: number;
+    paddingX: number;
+    slotIndex: number;
+    width: number;
+    x: number;
+    y: number;
+  },
+): void {
+  const slotWidth = (width - paddingX * 2) / itemCount;
+  const insetX = 4;
+  const insetY = 4;
+
+  context.save();
+  context.strokeStyle = "#23a8ff";
+  context.lineWidth = 2;
+  context.strokeRect(
+    x + paddingX + slotWidth * slotIndex + insetX,
+    y + insetY,
+    slotWidth - insetX * 2,
+    height - insetY * 2,
+  );
+  context.restore();
 }
 
 function formatHeadingLabel(value: number): string {

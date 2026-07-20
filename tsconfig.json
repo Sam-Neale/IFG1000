@@ -1,0 +1,24 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "packages/shared"
+    },
+    {
+      "path": "packages/avionics-core"
+    },
+    {
+      "path": "packages/if-connect"
+    },
+    {
+      "path": "packages/navdata"
+    },
+    {
+      "path": "packages/g1000-ui"
+    },
+    {
+      "path": "apps/desktop"
+    }
+  ]
+}
+

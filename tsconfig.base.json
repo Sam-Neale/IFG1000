@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "exactOptionalPropertyTypes": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "paths": {
+      "@ifg1000/avionics-core": [
+        "./packages/avionics-core/src/index.ts"
+      ],
+      "@ifg1000/g1000-ui": [
+        "./packages/g1000-ui/src/index.ts"
+      ],
+      "@ifg1000/if-connect": [
+        "./packages/if-connect/src/index.ts"
+      ],
+      "@ifg1000/navdata": [
+        "./packages/navdata/src/index.ts"
+      ],
+      "@ifg1000/shared": [
+        "./packages/shared/src/index.ts"
+      ]
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "ifg1000",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Infinite Flight powered G1000-style avionics emulator.",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "postinstall": "node node_modules/electron/install.js",
+    "electron:install": "node node_modules/electron/install.js",
+    "dev": "npm run electron:install && npm run build:packages && npm --workspace @ifg1000/desktop run dev",
+    "build": "npm run build:packages && npm --workspace @ifg1000/desktop run build",
+    "build:packages": "tsc -b packages/shared packages/avionics-core packages/if-connect packages/navdata packages/g1000-ui",
+    "typecheck": "tsc -b",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^43.1.1",
+    "electron-vite": "^5.0.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.6",
+    "vitest": "^4.1.10"
+  }
+}

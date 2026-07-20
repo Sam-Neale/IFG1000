@@ -1,0 +1,25 @@
+{
+  "name": "@ifg1000/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@ifg1000/avionics-core": "0.1.0",
+    "@ifg1000/g1000-ui": "0.1.0",
+    "@ifg1000/if-connect": "0.1.0",
+    "@ifg1000/shared": "0.1.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3"
+  }
+}

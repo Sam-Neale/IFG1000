@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1452px" height="948px" viewBox="0 0 1452 948" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Frame</title>
+    <defs>
+        <path d="M0,0 L1452,0 L1452,948 L0,948 Z" id="path-1"></path>
+        <ellipse id="path-2" cx="1363" cy="320" rx="10" ry="13"></ellipse>
+    </defs>
+    <g id="Frame" stroke="none" fill="none" xlink:href="#path-1">
+        <use fill="#4E4E4E" fill-rule="evenodd" xlink:href="#path-1"></use>
+        <rect id="Display" stroke="#69696A" stroke-width="5" fill="#2A3032" fill-rule="evenodd" x="194.5" y="45.5" width="1061" height="798"></rect>
+        <g id="Nav-Frequency-Adjuster" stroke-width="1" fill-rule="evenodd" transform="translate(60, 182)" fill="#7D8082" stroke="#343434">
+            <circle id="Oval-3" cx="32.5" cy="32.5" r="32"></circle>
+            <ellipse id="Oval-3" stroke-width="3" cx="32.5" cy="32" rx="24" ry="23.5"></ellipse>
+        </g>
+        <g id="SCREW" stroke-width="1" fill-rule="evenodd" transform="translate(17, 38)">
+            <circle id="Oval" fill="#636766" cx="17" cy="17" r="17"></circle>
+            <line x1="5.5" y1="17.5" x2="29.5" y2="17.5" id="Line" stroke="#979797" stroke-linecap="square"></line>
+            <circle id="Oval-2" fill="#474C4A" cx="17" cy="17" r="7"></circle>
+        </g>
+        <text id="NAV" font-family="Helvetica-Light, Helvetica" font-size="18" font-weight="300" letter-spacing="3" fill="#FFFFFF">
+            <tspan x="73" y="161">NAV</tspan>
+        </text>
+        <text id="HDG" font-family="Helvetica-Light, Helvetica" font-size="18" font-weight="300" letter-spacing="3" fill="#FFFFFF">
+            <tspan x="71" y="330">HDG</tspan>
+        </text>
+        <g id="Group" stroke-width="1" fill-rule="evenodd" transform="translate(79, 267)" fill="#FFFFFF" font-family="Helvetica-Light, Helvetica" font-weight="300">
+            <text id="1-2" font-size="18" letter-spacing="1">
+                <tspan x="0" y="27">1-2</tspan>
+            </text>
+            <text id="PUSH" font-size="10" letter-spacing="1.5">
+                <tspan x="0" y="10">PUSH</tspan>
+            </text>
+        </g>
+        <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="18" font-weight="300" letter-spacing="2" fill="#FFFFFF">
+            <tspan x="76" y="814">ALT</tspan>
+        </text>
+        <text id="VOL" font-family="Helvetica-Light, Helvetica" font-size="10" font-weight="300" letter-spacing="1.66666667" fill="#FFFFFF">
+            <tspan x="18" y="111">VOL</tspan>
+        </text>
+        <text id="VOL" font-family="Helvetica-Light, Helvetica" font-size="10" font-weight="300" letter-spacing="1.66666667" fill="#FFFFFF">
+            <tspan x="1380" y="111">VOL</tspan>
+        </text>
+        <g id="Group" stroke-width="1" fill-rule="evenodd" transform="translate(41, 96)" fill="#FFFFFF" font-family="Helvetica-Light, Helvetica" font-weight="300">
+            <text id="ID" font-size="10" letter-spacing="1.66666667">
+                <tspan x="7" y="21">ID</tspan>
+            </text>
+            <text id="PUSH" font-size="9" letter-spacing="0.9">
+                <tspan x="0" y="9">PUSH</tspan>
+            </text>
+        </g>
+        <text id="PUSH" font-family="Helvetica-Light, Helvetica" font-size="10" font-weight="300" letter-spacing="1.5" fill="#FFFFFF">
+            <tspan x="78" y="447">PUSH</tspan>
+        </text>
+        <text id="HDG-SYNC" font-family="Helvetica-Light, Helvetica" font-size="10" font-weight="300" letter-spacing="1.5" fill="#FFFFFF">
+            <tspan x="62" y="458">HDG SYNC</tspan>
+        </text>
+        <circle id="NAV_VOL_KNOB" fill="#7D8082" fill-rule="evenodd" cx="92.5" cy="70.5" r="19.5"></circle>
+        <g id="Nav-Active-Toggle" stroke-width="1" fill-rule="evenodd" transform="translate(107, 107)">
+            <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+            <g id="Group" transform="translate(8, 11.4424)">
+                <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="34" height="14"></rect>
+                <path d="M34,6.99555597 C34,6.75556077 33.8507183,6.53332381 33.5657755,6.34665691 L24.1499403,0.266666497 C23.8921842,0.0977778344 23.5122786,0 23.1866646,0 C22.3997484,0 21.8842089,0.355555924 21.8842089,0.853333146 C21.8842089,1.10222176 22.0063039,1.29777671 22.2369551,1.44888785 L26.6192179,4.24888071 L31.3813045,6.99555597 L26.6192179,9.73332534 L22.2369551,12.5333289 C22.0063039,12.6844436 21.8842089,12.8799986 21.8842089,13.1288818 C21.8842089,13.6266662 22.3997484,13.9822239 23.1866646,13.9822239 C23.5122786,13.9822239 23.8921842,13.8844375 24.1499403,13.7155467 L33.5657755,7.63554914 C33.8507183,7.45777029 34,7.23555118 34,6.99555597 Z M1.19392954,6.99555597 C1.19392954,7.41333004 1.70949083,7.74222359 2.36072686,7.75111164 L8.00476881,7.85776825 L25.9951222,7.85776825 L31.6392786,7.75111164 C32.2767224,7.74222359 32.8060187,7.41333004 32.8060187,6.99555597 C32.8060187,6.56889386 32.2767224,6.24000031 31.6392786,6.23111226 L25.9951222,6.13332585 L8.00476881,6.13332585 L2.36072686,6.23111226 C1.70949083,6.24000031 1.19392954,6.56889386 1.19392954,6.99555597 Z M0,6.99555597 C0,7.23555118 0.135673923,7.45777029 0.434156445,7.63554914 L9.84992348,13.7155467 C10.1077069,13.8844375 10.4740191,13.9822239 10.799633,13.9822239 C11.6001154,13.9822239 12.1156821,13.6266662 12.1156821,13.1288818 C12.1156821,12.8799986 11.9935599,12.6844436 11.762936,12.5333289 L7.38067318,9.73332534 L2.61850478,6.99555597 L7.38067318,4.24888071 L11.762936,1.44888785 C11.9935599,1.29777671 12.1156821,1.10222176 12.1156821,0.853333146 C12.1156821,0.355555924 11.6001154,0 10.799633,0 C10.4740191,0 10.1077069,0.0977778344 9.84992348,0.266666497 L0.434156445,6.34665691 C0.135673923,6.53332381 0,6.75556077 0,6.99555597 Z" id="Shape" fill-opacity="0.85" fill="#FFFFFF" fill-rule="nonzero"></path>
+            </g>
+        </g>
+        <g id="Comm-Frequency-Adjuster" stroke-width="1" fill-rule="evenodd" transform="translate(1323, 183)" fill="#7D8082" stroke="#343434">
+            <circle id="Oval-3" cx="32.5" cy="32.5" r="32"></circle>
+            <ellipse id="Oval-3" stroke-width="3" cx="32.5" cy="32" rx="24" ry="23.5"></ellipse>
+        </g>
+        <g id="Heading-Adjuster" stroke-width="1" fill-rule="evenodd" transform="translate(60, 354)" fill="#7D8082" stroke="#343434">
+            <circle id="Oval-3" cx="32.5" cy="32.5" r="32"></circle>
+            <ellipse id="Oval-3" stroke-width="3" cx="32.5" cy="32" rx="24" ry="23.5"></ellipse>
+        </g>
+        <g id="SCREW" stroke-width="1" fill-rule="evenodd" transform="translate(17, 874)">
+            <circle id="Oval" fill="#636766" cx="17" cy="17" r="17"></circle>
+            <line x1="5.5" y1="17.5" x2="29.5" y2="17.5" id="Line" stroke="#979797" stroke-linecap="square"></line>
+            <circle id="Oval-2" fill="#474C4A" cx="17" cy="17" r="7"></circle>
+        </g>
+        <g id="SCREW" stroke-width="1" fill-rule="evenodd" transform="translate(1402, 874)">
+            <circle id="Oval" fill="#636766" cx="17" cy="17" r="17"></circle>
+            <line x1="5.5" y1="17.5" x2="29.5" y2="17.5" id="Line" stroke="#979797" stroke-linecap="square"></line>
+            <circle id="Oval-2" fill="#474C4A" cx="17" cy="17" r="7"></circle>
+        </g>
+        <g id="SCREW" stroke-width="1" fill-rule="evenodd" transform="translate(1402, 38)">
+            <circle id="Oval" fill="#636766" cx="17" cy="17" r="17"></circle>
+            <line x1="5.5" y1="17.5" x2="29.5" y2="17.5" id="Line" stroke="#979797" stroke-linecap="square"></line>
+            <circle id="Oval-2" fill="#474C4A" cx="17" cy="17" r="7"></circle>
+        </g>
+        <g id="Altitude-Adjuster" stroke-width="1" fill-rule="evenodd" transform="translate(62, 836)" fill="#7D8082" stroke="#343434">
+            <circle id="Oval-3" cx="32.5" cy="32.5" r="32"></circle>
+            <ellipse id="Oval-3" stroke-width="3" cx="32.5" cy="32" rx="24" ry="23.5"></ellipse>
+        </g>
+        <g id="Comm-Active-Toggle" stroke-width="1" fill-rule="evenodd" transform="translate(1293, 107)">
+            <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+            <g id="Group" transform="translate(8, 11.4424)">
+                <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="34" height="14"></rect>
+                <path d="M34,6.99555597 C34,6.75556077 33.8507183,6.53332381 33.5657755,6.34665691 L24.1499403,0.266666497 C23.8921842,0.0977778344 23.5122786,0 23.1866646,0 C22.3997484,0 21.8842089,0.355555924 21.8842089,0.853333146 C21.8842089,1.10222176 22.0063039,1.29777671 22.2369551,1.44888785 L26.6192179,4.24888071 L31.3813045,6.99555597 L26.6192179,9.73332534 L22.2369551,12.5333289 C22.0063039,12.6844436 21.8842089,12.8799986 21.8842089,13.1288818 C21.8842089,13.6266662 22.3997484,13.9822239 23.1866646,13.9822239 C23.5122786,13.9822239 23.8921842,13.8844375 24.1499403,13.7155467 L33.5657755,7.63554914 C33.8507183,7.45777029 34,7.23555118 34,6.99555597 Z M1.19392954,6.99555597 C1.19392954,7.41333004 1.70949083,7.74222359 2.36072686,7.75111164 L8.00476881,7.85776825 L25.9951222,7.85776825 L31.6392786,7.75111164 C32.2767224,7.74222359 32.8060187,7.41333004 32.8060187,6.99555597 C32.8060187,6.56889386 32.2767224,6.24000031 31.6392786,6.23111226 L25.9951222,6.13332585 L8.00476881,6.13332585 L2.36072686,6.23111226 C1.70949083,6.24000031 1.19392954,6.56889386 1.19392954,6.99555597 Z M0,6.99555597 C0,7.23555118 0.135673923,7.45777029 0.434156445,7.63554914 L9.84992348,13.7155467 C10.1077069,13.8844375 10.4740191,13.9822239 10.799633,13.9822239 C11.6001154,13.9822239 12.1156821,13.6266662 12.1156821,13.1288818 C12.1156821,12.8799986 11.9935599,12.6844436 11.762936,12.5333289 L7.38067318,9.73332534 L2.61850478,6.99555597 L7.38067318,4.24888071 L11.762936,1.44888785 C11.9935599,1.29777671 12.1156821,1.10222176 12.1156821,0.853333146 C12.1156821,0.355555924 11.6001154,0 10.799633,0 C10.4740191,0 10.1077069,0.0977778344 9.84992348,0.266666497 L0.434156445,6.34665691 C0.135673923,6.53332381 0,6.75556077 0,6.99555597 Z" id="Shape" fill-opacity="0.85" fill="#FFFFFF" fill-rule="nonzero"></path>
+            </g>
+        </g>
+        <g id="Group" stroke-width="1" fill-rule="evenodd" transform="translate(1344, 268)" fill="#FFFFFF" font-family="Helvetica-Light, Helvetica" font-weight="300">
+            <text id="1-2" font-size="18" letter-spacing="1">
+                <tspan x="0" y="27">1-2</tspan>
+            </text>
+            <text id="PUSH" font-size="10" letter-spacing="1.5">
+                <tspan x="0" y="10">PUSH</tspan>
+            </text>
+        </g>
+        <circle id="NAV_VOL_KNOB" fill="#7D8082" fill-rule="evenodd" cx="1359.5" cy="69.5" r="19.5"></circle>
+        <g id="Softkeys" stroke-width="1" fill-rule="evenodd" transform="translate(304, 844)">
+            <g id="Softkey" transform="translate(0, 1)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+            <g id="Softkey" transform="translate(87, 1)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+            <g id="Softkey" transform="translate(174, 1)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+            <g id="Softkey" transform="translate(264, 1)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+            <g id="Softkey" transform="translate(351, 1)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+            <g id="Softkey" transform="translate(440, 1)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+            <g id="Softkey" transform="translate(529, 1)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+            <g id="Softkey" transform="translate(617, 1)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+            <g id="Softkey" transform="translate(705, 1)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+            <g id="Softkey" transform="translate(794, 1)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+            <g id="Softkey" transform="translate(883, 0)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+            <g id="Softkey" transform="translate(-90, 1)">
+                <line x1="26.5" y1="0.5" x2="26.5" y2="23.5" id="Line" stroke="#979797" stroke-width="2" stroke-linecap="square"></line>
+                <g id="Group" transform="translate(0, 23)">
+                    <rect id="Rectangle-2" fill="#404040" x="0" y="0" width="53" height="36" rx="10"></rect>
+                    <g id="Group" transform="translate(16, 12.64)">
+                        <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="20" height="10"></rect>
+                        <path d="M20,9.32886086 C20,9.10991972 19.8041317,8.93857034 19.5690898,8.70059251 L11.5181365,0.618750956 C11.0578067,0.161827217 10.6170637,0.00475962347 10.0000197,0.00475962347 C9.392769,0.00475962347 8.95202604,0.161827217 8.48190283,0.618750956 L0.440744929,8.70059251 C0.195886766,8.94332951 0,9.1146789 0,9.33362003 C0,9.74770642 0.636630908,10 1.64544891,10 L18.3643819,9.99522171 C19.3634084,9.99522171 20,9.74292813 20,9.32886086 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <g id="Group" stroke-width="1" fill-rule="evenodd" transform="translate(1405, 95)" fill="#FFFFFF" font-family="Helvetica-Light, Helvetica" font-weight="300">
+            <text id="SQ" font-size="10" letter-spacing="1.66666667">
+                <tspan x="5" y="21">SQ</tspan>
+            </text>
+            <text id="PUSH" font-size="9" letter-spacing="0.9">
+                <tspan x="0" y="9">PUSH</tspan>
+            </text>
+        </g>
+        <g id="Cursor-Scroll" stroke-width="1" fill-rule="evenodd" transform="translate(1327, 836)" fill="#7D8082" stroke="#343434">
+            <circle id="Oval-3" cx="32.5" cy="32.5" r="32"></circle>
+            <ellipse id="Oval-3" stroke-width="3" cx="32.5" cy="32" rx="24" ry="23.5"></ellipse>
+        </g>
+        <g id="GFC700-Panel" stroke-width="1" fill-rule="evenodd" transform="translate(32, 473)">
+            <g id="A/P-Toggle" transform="translate(2, 0)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="AP" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="14.4413333" y="22">AP</tspan>
+                </text>
+            </g>
+            <g id="FD-Toggle" transform="translate(72, 0)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="FD" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="14.4413333" y="22">FD</tspan>
+                </text>
+            </g>
+            <g id="ALT-MODE-TOGGLE" transform="translate(72, 54)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="9.382" y="24">ALT</tspan>
+                </text>
+            </g>
+            <g id="HDG-Mode-Toggle" transform="translate(0, 54)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="6.892" y="24">HDG</tspan>
+                </text>
+            </g>
+            <g id="NAV-MODE-TOGGLE" transform="translate(0, 108)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="8.018" y="24">NAV</tspan>
+                </text>
+            </g>
+            <g id="VNV-MODE-TOGGLE" transform="translate(72, 108)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="7.892" y="24">VNV</tspan>
+                </text>
+            </g>
+            <g id="APR-Toggle" transform="translate(0, 164)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="7.885" y="24">APR</tspan>
+                </text>
+            </g>
+            <g id="BC-Toggle" transform="translate(72, 164)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="BC" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="13.8873333" y="23">BC</tspan>
+                </text>
+            </g>
+            <g id="VS-Toggle" transform="translate(0, 222)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="VS" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="15.2253333" y="22">VS</tspan>
+                </text>
+            </g>
+            <g id="FLC-Toggle" transform="translate(0, 276)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="8.662" y="24">FLC</tspan>
+                </text>
+                <g id="VNV-MODE-TOGGLE">
+                    <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                    <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                        <tspan x="8.662" y="24">FLC</tspan>
+                    </text>
+                </g>
+            </g>
+            <g id="Nose-Down-Toggle" transform="translate(72, 276)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="12.5586667" y="29">DN</tspan>
+                </text>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="9" font-weight="300" letter-spacing="1" fill="#FFFFFF">
+                    <tspan x="10.751" y="16">NOSE</tspan>
+                </text>
+            </g>
+            <g id="Nose-Up-Toggle" transform="translate(72, 222)">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="13.3356667" y="29">UP</tspan>
+                </text>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="9" font-weight="300" letter-spacing="1" fill="#FFFFFF">
+                    <tspan x="10.751" y="16">NOSE</tspan>
+                </text>
+            </g>
+        </g>
+        <text id="EMERG" font-family="Helvetica-Light, Helvetica" font-size="10" font-weight="300" letter-spacing="0.5" fill="#FFFFFF">
+            <tspan x="1287" y="168">EMERG</tspan>
+        </text>
+        <line x1="1319.5" y1="149.5" x2="1319.5" y2="159.5" id="Line" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="square"></line>
+        <text id="COM" font-family="Helvetica-Light, Helvetica" font-size="18" font-weight="300" letter-spacing="2.5" fill="#FFFFFF">
+            <tspan x="1335" y="161">COM</tspan>
+        </text>
+        <text id="CRS" font-family="Helvetica-Light, Helvetica" font-size="18" font-weight="300" letter-spacing="2.5" fill="#FFFFFF">
+            <tspan x="1306" y="326">CRS</tspan>
+        </text>
+        <text id="BARO" font-family="Helvetica-Light, Helvetica" font-size="18" font-weight="300" letter-spacing="2" fill="#FFFFFF">
+            <tspan x="1379" y="326">BARO</tspan>
+        </text>
+        <text id="PUSH" font-family="Helvetica-Light, Helvetica" font-size="11" font-weight="300" letter-spacing="1" fill="#FFFFFF">
+            <tspan x="1343" y="447">PUSH</tspan>
+        </text>
+        <text id="PUSH" font-family="Helvetica-Light, Helvetica" font-size="11" font-weight="300" letter-spacing="1" fill="#FFFFFF">
+            <tspan x="1343" y="606">PUSH</tspan>
+        </text>
+        <text id="CRS-CTR" font-family="Helvetica-Light, Helvetica" font-size="11" font-weight="300" letter-spacing="0.8" fill="#FFFFFF">
+            <tspan x="1333" y="458">CRS CTR</tspan>
+        </text>
+        <text id="PUSH-CRSR" font-family="Helvetica-Light, Helvetica" font-size="11" font-weight="300" letter-spacing="1" fill="#FFFFFF">
+            <tspan x="1324" y="930">PUSH CRSR</tspan>
+        </text>
+        <text id="FMS" font-family="Helvetica-Light, Helvetica" font-size="18" font-weight="300" letter-spacing="1.63636364" fill="#FFFFFF">
+            <tspan x="1339" y="813">FMS</tspan>
+        </text>
+        <g id="CRS-Baro-Knob" stroke-width="1" fill-rule="evenodd" transform="translate(1328, 353)">
+            <circle id="Oval-5" fill="#3B3B3B" cx="30" cy="30" r="30"></circle>
+            <polygon id="Triangle" fill="#898A8C" points="31 7 53 42 9 42"></polygon>
+            <circle id="Oval-4" stroke="#797979" stroke-width="6" cx="31" cy="31" r="28"></circle>
+        </g>
+        <text id="PAN" font-family="Helvetica-Light, Helvetica" font-size="18" font-weight="300" letter-spacing="1.63636364" fill="#FFFFFF">
+            <tspan x="1340" y="624">PAN</tspan>
+        </text>
+        <text id="RANGE" font-family="Helvetica-Light, Helvetica" font-size="18" font-weight="300" letter-spacing="1.63636364" fill="#FFFFFF">
+            <tspan x="1325" y="489">RANGE</tspan>
+        </text>
+        <g id="arrowtriangle.up.fill" transform="translate(1351, 494)" fill-rule="evenodd" stroke-width="1">
+            <g id="Group">
+                <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="16" height="9"></rect>
+                <path d="M16,8.39597477 C16,8.19892775 15.8433054,8.0447133 15.6552718,7.83053326 L9.2145092,0.55687586 C8.84624537,0.145644495 8.493651,0.00428366112 8.00001573,0.00428366112 C7.5142152,0.00428366112 7.16162083,0.145644495 6.78552227,0.55687586 L0.352595943,7.83053326 C0.156709413,8.04899656 0,8.20321101 0,8.40025803 C0,8.77293578 0.509304727,9 1.31635913,9 L14.6915055,8.99569954 C15.4907267,8.99569954 16,8.76863532 16,8.39597477 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+            </g>
+        </g>
+        <g id="arrowtriangle.up.fill" transform="translate(1359, 588.5) rotate(180) translate(-1359, -588.5)translate(1351, 584)" fill-rule="evenodd" stroke-width="1">
+            <g id="Group">
+                <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="16" height="9"></rect>
+                <path d="M16,8.39597477 C16,8.19892775 15.8433054,8.0447133 15.6552718,7.83053326 L9.2145092,0.55687586 C8.84624537,0.145644495 8.493651,0.00428366112 8.00001573,0.00428366112 C7.5142152,0.00428366112 7.16162083,0.145644495 6.78552227,0.55687586 L0.352595943,7.83053326 C0.156709413,8.04899656 0,8.20321101 0,8.40025803 C0,8.77293578 0.509304727,9 1.31635913,9 L14.6915055,8.99569954 C15.4907267,8.99569954 16,8.76863532 16,8.39597477 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+            </g>
+        </g>
+        <g id="arrowtriangle.up.fill" transform="translate(1404, 544.5) rotate(90) translate(-1404, -544.5)translate(1396, 540)" fill-rule="evenodd" stroke-width="1">
+            <g id="Group">
+                <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="16" height="9"></rect>
+                <path d="M16,8.39597477 C16,8.19892775 15.8433054,8.0447133 15.6552718,7.83053326 L9.2145092,0.55687586 C8.84624537,0.145644495 8.493651,0.00428366112 8.00001573,0.00428366112 C7.5142152,0.00428366112 7.16162083,0.145644495 6.78552227,0.55687586 L0.352595943,7.83053326 C0.156709413,8.04899656 0,8.20321101 0,8.40025803 C0,8.77293578 0.509304727,9 1.31635913,9 L14.6915055,8.99569954 C15.4907267,8.99569954 16,8.76863532 16,8.39597477 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+            </g>
+        </g>
+        <g id="arrowtriangle.up.fill" transform="translate(1313, 544.5) rotate(270) translate(-1313, -544.5)translate(1305, 540)" fill-rule="evenodd" stroke-width="1">
+            <g id="Group">
+                <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="16" height="9"></rect>
+                <path d="M16,8.39597477 C16,8.19892775 15.8433054,8.0447133 15.6552718,7.83053326 L9.2145092,0.55687586 C8.84624537,0.145644495 8.493651,0.00428366112 8.00001573,0.00428366112 C7.5142152,0.00428366112 7.16162083,0.145644495 6.78552227,0.55687586 L0.352595943,7.83053326 C0.156709413,8.04899656 0,8.20321101 0,8.40025803 C0,8.77293578 0.509304727,9 1.31635913,9 L14.6915055,8.99569954 C15.4907267,8.99569954 16,8.76863532 16,8.39597477 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+            </g>
+        </g>
+        <g id="Group" stroke-width="1" fill-rule="evenodd" transform="translate(1396, 514)">
+            <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="12" height="11"></rect>
+            <path d="M6.55581225,10.4779775 L6.55581225,0.511630296 C6.55581225,0.23493215 6.30498192,0 5.99713847,0 C5.69500663,0 5.44417631,0.23493215 5.44417631,0.511630296 L5.44417631,10.4779775 C5.44417631,10.7547123 5.69500663,10.9896224 5.99713847,10.9896224 C6.30498192,10.9896224 6.55581225,10.7547123 6.55581225,10.4779775 Z M0.558669198,6.00382512 L11.4413148,6.00382512 C11.7434924,6.00382512 12,5.77411424 12,5.49741085 C12,5.21549772 11.7434924,4.98578685 11.4413148,4.98578685 L0.558669198,4.98578685 C0.256531634,4.98578685 0,5.21549772 0,5.49741085 C0,5.77411424 0.256531634,6.00382512 0.558669198,6.00382512 Z" id="Shape" fill-opacity="0.85" fill="#FFFFFF" fill-rule="nonzero"></path>
+        </g>
+        <g id="minus" transform="translate(1310, 519)" fill-rule="evenodd" stroke-width="1">
+            <g id="Group">
+                <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="12" height="4"></rect>
+                <path d="M0.558669198,4 L11.4413148,4 C11.7434924,4 12,3.09547751 12,2.03014994 C12,0.94472376 11.7434924,0.0603014994 11.4413148,0.0603014994 L0.558669198,0.0603014994 C0.256531634,0.0603014994 0,0.94472376 0,2.03014994 C0,3.09547751 0.256531634,4 0.558669198,4 Z" id="Path" fill-opacity="0.85" fill="#FFFFFF"></path>
+            </g>
+        </g>
+        <circle id="NAV_VOL_KNOB" fill="#84888B" fill-rule="evenodd" cx="1358.5" cy="544.5" r="19.5"></circle>
+        <path id="Line" d="M1319.1282,514.834315 L1328.82939,512.162816 L1322.81172,505.470464 L1319.1282,514.834315 Z M1347.33548,496.027841 C1341.63991,498.012371 1336.9383,500.195263 1333.22962,502.579411 C1330.90473,504.073981 1328.19264,506.147453 1325.09079,508.800635 L1324.71082,509.125639 L1325.36083,509.885566 L1325.74079,509.560562 C1328.81067,506.934729 1331.48805,504.887802 1333.77038,503.420589 C1337.40681,501.082884 1342.03853,498.932444 1347.66452,496.972159 L1348.13668,496.807643 L1347.80764,495.863324 L1347.33548,496.027841 Z" fill="#FFFFFF" fill-rule="nonzero"></path>
+        <path id="Line" d="M1368.1282,514.834315 L1377.82939,512.162816 L1371.81172,505.470464 L1368.1282,514.834315 Z M1396.33548,496.027841 C1390.63991,498.012371 1385.9383,500.195263 1382.22962,502.579411 C1379.90473,504.073981 1377.19264,506.147453 1374.09079,508.800635 L1373.71082,509.125639 L1374.36083,509.885566 L1374.74079,509.560562 C1377.81067,506.934729 1380.48805,504.887802 1382.77038,503.420589 C1386.40681,501.082884 1391.03853,498.932444 1396.66452,496.972159 L1397.13668,496.807643 L1396.80764,495.863324 L1396.33548,496.027841 Z" transform="translate(1382.5, 505.5) scale(-1, 1) translate(-1382.5, -505.5)" fill="#FFFFFF" fill-rule="nonzero"></path>
+        <text id="DFLT-MAP" font-family="Helvetica-Light, Helvetica" font-size="10" font-weight="300" letter-spacing="0.3" fill="#FFFFFF">
+            <tspan x="1285" y="813">DFLT MAP</tspan>
+        </text>
+        <g id="FLC-Toggle" stroke-width="1" fill-rule="evenodd" transform="translate(1298, 695)">
+            <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+            <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                <tspan x="8.662" y="24">FLC</tspan>
+            </text>
+            <g id="VNV-MODE-TOGGLE">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="9.439" y="24">FPL</tspan>
+                </text>
+            </g>
+        </g>
+        <g id="FLC-Toggle" stroke-width="1" fill-rule="evenodd" transform="translate(1298, 752)">
+            <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+            <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                <tspan x="8.662" y="24">FLC</tspan>
+            </text>
+            <g id="VNV-MODE-TOGGLE">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="7.885" y="24">CLR</tspan>
+                </text>
+            </g>
+            <g>
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="8.662" y="24">FLC</tspan>
+                </text>
+                <g id="VNV-MODE-TOGGLE">
+                    <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                    <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                        <tspan x="7.885" y="24">CLR</tspan>
+                    </text>
+                </g>
+            </g>
+        </g>
+        <g id="FLC-Toggle" stroke-width="1" fill-rule="evenodd" transform="translate(1367, 752)">
+            <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+            <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                <tspan x="8.662" y="24">FLC</tspan>
+            </text>
+            <g id="VNV-MODE-TOGGLE">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="8.277" y="24">ENT</tspan>
+                </text>
+            </g>
+        </g>
+        <g id="FLC-Toggle" stroke-width="1" fill-rule="evenodd" transform="translate(1367, 695)">
+            <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+            <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                <tspan x="8.662" y="24">FLC</tspan>
+            </text>
+            <g id="VNV-MODE-TOGGLE">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="11" font-weight="300" letter-spacing="1.83333333" fill="#FFFFFF">
+                    <tspan x="6.05433333" y="22">PROC</tspan>
+                </text>
+            </g>
+        </g>
+        <g id="FLC-Toggle" stroke-width="1" fill-rule="evenodd" transform="translate(1367, 641)">
+            <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+            <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                <tspan x="8.662" y="24">FLC</tspan>
+            </text>
+            <g id="VNV-MODE-TOGGLE">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="11" font-weight="300" letter-spacing="1.83333333" fill="#FFFFFF">
+                    <tspan x="5.44933333" y="22">MENU</tspan>
+                </text>
+            </g>
+        </g>
+        <g id="FLC-Toggle" stroke-width="1" fill-rule="evenodd" transform="translate(1298, 641)">
+            <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+            <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                <tspan x="8.662" y="24">FLC</tspan>
+            </text>
+            <g id="VNV-MODE-TOGGLE">
+                <rect id="Rectangle" fill="#424242" x="0" y="0" width="50" height="36" rx="10"></rect>
+                <text id="ALT" font-family="Helvetica-Light, Helvetica" font-size="14" font-weight="300" letter-spacing="2.33333333" fill="#FFFFFF">
+                    <tspan x="18.7793333" y="24">D</tspan>
+                </text>
+            </g>
+        </g>
+        <path id="Line" d="M1336.88889,660.5 L1329.88889,657.25 L1329.88889,663.75 L1336.88889,660.5 Z M1312.5,660.75 L1330.13889,660.75 L1330.38889,660.75 L1330.38889,660.25 L1330.13889,660.25 L1312.5,660.25 L1312.25,660.25 L1312.25,660.75 L1312.5,660.75 Z" fill="#FFFFFF" fill-rule="nonzero"></path>
+        <g id="triangle" transform="translate(1355, 313)" fill-rule="evenodd" stroke-width="1">
+            <g id="Group">
+                <rect id="Rectangle" fill="#000000" opacity="0" x="0" y="0" width="13" height="11"></rect>
+                <path d="M1.61293316,10.9062793 L11.3822963,10.9062793 C12.3915673,10.9062793 13,10.2547141 13,9.42914742 C13,9.16142512 12.9179707,8.88475185 12.7585662,8.63039774 L7.87630861,0.740768272 C7.57208258,0.245435411 7.03604129,0 6.5,0 C5.95914942,0 5.42794651,0.245435411 5.12371079,0.740768272 L0.241456136,8.63039774 C0.0772660993,8.88921389 0,9.16142512 0,9.42914742 C0,10.2547141 0.608470472,10.9062793 1.61293316,10.9062793 Z M1.62259051,10.1342033 C1.14450304,10.1342033 0.859584931,9.79955038 0.859584931,9.42475706 C0.859584931,9.29080631 0.898218223,9.13911492 0.980318332,8.99629385 L5.85290884,1.11561713 C5.99777884,0.879104008 6.25372779,0.785392241 6.5000097,0.785392241 C6.7462916,0.785392241 6.99741188,0.879104008 7.1374532,1.11561713 L12.0148724,9.00077381 C12.0969987,9.14359488 12.1355893,9.29080631 12.1355893,9.42475706 C12.1355893,9.79955038 11.8458687,10.1342033 11.3677521,10.1342033 L1.62259051,10.1342033 Z" id="Shape" fill-opacity="0.85" fill="#FFFFFF" fill-rule="nonzero"></path>
+            </g>
+        </g>
+        <mask id="mask-3" fill="white">
+            <use xlink:href="#path-2"></use>
+        </mask>
+        <g id="Oval-6"></g>
+        <ellipse id="Oval-6" stroke="#FFFFFF" stroke-width="1" mask="url(#mask-3)" cx="1362" cy="319.5" rx="10.5" ry="11"></ellipse>
+        <line x1="1350.5" y1="319.5" x2="1357.5" y2="319.5" id="Line" stroke="#FFFFFF" stroke-width="1" stroke-linecap="square"></line>
+        <line x1="1372" y1="320" x2="1377.5" y2="319.5" id="Line" stroke="#FFFFFF" stroke-width="1" stroke-linecap="square" transform="translate(1374.5, 319.5) rotate(5.1944) translate(-1374.5, -319.5)"></line>
+    </g>
+</svg>

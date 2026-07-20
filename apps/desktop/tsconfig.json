@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "types": [
+      "node",
+      "electron-vite/node"
+    ]
+  },
+  "include": [
+    "electron.vite.config.ts",
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../packages/shared"
+    },
+    {
+      "path": "../../packages/avionics-core"
+    },
+    {
+      "path": "../../packages/if-connect"
+    },
+    {
+      "path": "../../packages/g1000-ui"
+    }
+  ]
+}
+

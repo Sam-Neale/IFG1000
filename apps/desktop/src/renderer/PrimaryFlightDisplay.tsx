@@ -101,10 +101,10 @@ const dummyPfdData: PfdDisplayData = {
   },
   radios: {
     bearingDeg: 105,
-    com1Active: "118.000",
-    com1Standby: "136.975",
-    com2Active: "118.000",
-    com2Standby: "118.000",
+    com1Active: "118.100",
+    com1Standby: "136.275",
+    com2Active: "118.300",
+    com2Standby: "118.400",
     comSource: 1,
     distanceNm: 51.5,
     nav1Active: "108.00",
@@ -1277,9 +1277,9 @@ function drawCommStack(
   drawFlexTextRow(context, {
     height: row1Height,
     items: [
-      { text: radios.com1Active, size: 13 },
-      { text: "↔" },
       { text: radios.com1Standby, size: 13 },
+      { text: "↔" },
+      { text: radios.com1Active, size: 13 },
     ],
     paddingX: frequencyPaddingX,
     width: frequencyWidth,
@@ -1302,9 +1302,9 @@ function drawCommStack(
   drawFlexTextRow(context, {
     height: row2Height,
     items: [
-      { text: radios.com2Active, size: 13 },
-      { text: "↔" },
       { text: radios.com2Standby, size: 13 },
+      { text: "↔" },
+      { text: radios.com2Active, size: 13 },
     ],
     paddingX: frequencyPaddingX,
     width: frequencyWidth,
@@ -1316,9 +1316,9 @@ function drawCommStack(
     height: radios.comSource === 1 ? row1Height : row2Height,
     itemCount: 3,
     paddingX: frequencyPaddingX,
-    slotIndex: 0,
+    slotIndex: 2,
     width: frequencyWidth,
-    x: frequencyX,
+    x: canvasWidth - frequencyWidth,
     y: radios.comSource === 1 ? row1Y : row2Y,
   });
 }

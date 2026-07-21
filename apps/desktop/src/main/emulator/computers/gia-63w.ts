@@ -2,6 +2,7 @@ import {
   EMULATOR_DATA_TOPICS,
   createPlaceholderGIA63WData,
   type CdiSource,
+  type CourseToFrom,
   type DisplayRole,
   type EmulatorComputerId,
   type GDC74AData,
@@ -28,6 +29,10 @@ const navCourseStatePaths = {
 const navHorizontalDeflectionRatioStatePaths = {
   NAV1: "aircraft/0/systems/nav_sources/nav/1/horizontal_deflection_ratio",
   NAV2: "aircraft/0/systems/nav_sources/nav/2/horizontal_deflection_ratio",
+} as const;
+const navToFromIndicatorStatePaths = {
+  NAV1: "aircraft/0/systems/nav_sources/nav/1/to_from_indicator_state",
+  NAV2: "aircraft/0/systems/nav_sources/nav/2/to_from_indicator_state",
 } as const;
 const gpsXtrackDistanceStatePath =
   "aircraft/0/systems/nav_sources/gps/xtrack_distance";
@@ -69,6 +74,12 @@ interface CdiDeviationMemory {
   NAV2: number;
 }
 
+interface CdiToFromMemory {
+  GPS: CourseToFrom;
+  NAV1: CourseToFrom;
+  NAV2: CourseToFrom;
+}
+
 interface GduInputPayload {
   action: PanelInputEvent["action"];
   control: string;
@@ -83,10 +94,13 @@ export function createGia63wComputer(
     discoveryTimeout: 20000,
   });
   const storedData = createStoredGiaData();
-  const courseMemory = createCdiCourseMemory(storedData.heading.desiredTrackDeg);
+  const courseMemory = createCdiCourseMemory(
+    storedData.heading.desiredTrackDeg,
+  );
   const deviationMemory = createCdiDeviationMemory(
     storedData.navMaster.courseDeviation,
   );
+  const toFromMemory = createCdiToFromMemory(storedData.navMaster.courseToFrom);
   const airspeedTrendSamples: AirspeedTrendSample[] = [];
   let connectPromise: Promise<void> | undefined;
   let publishTimer: ReturnType<typeof setInterval> | undefined;
@@ -124,6 +138,7 @@ export function createGia63wComputer(
           storedData,
           courseMemory,
           deviationMemory,
+          toFromMemory,
         );
       })
       .catch((error) => {
@@ -157,6 +172,7 @@ export function createGia63wComputer(
       storedData,
       courseMemory,
       deviationMemory,
+      toFromMemory,
     );
   }
 
@@ -195,6 +211,7 @@ export function createGia63wComputer(
           storedData,
           courseMemory,
           deviationMemory,
+          toFromMemory,
           message.payload,
         );
       }
@@ -281,6 +298,16 @@ function createCdiDeviationMemory(
   };
 }
 
+function createCdiToFromMemory(
+  initialCourseToFrom: CourseToFrom,
+): CdiToFromMemory {
+  return {
+    GPS: initialCourseToFrom,
+    NAV1: initialCourseToFrom,
+    NAV2: initialCourseToFrom,
+  };
+}
+
 async function retrieveIfcData(client: IFCClient): Promise<{
   bugKt: number;
   gpsXtrackDistanceMeters: number;
@@ -289,12 +316,14 @@ async function retrieveIfcData(client: IFCClient): Promise<{
   nav1: {
     activeFreqMHz: number;
     courseDeg: number;
+    courseToFrom: CourseToFrom | undefined;
     horizontalDeflectionRatio: number;
     signalType: NavSignalType;
   };
   nav2: {
     activeFreqMHz: number;
     courseDeg: number;
+    courseToFrom: CourseToFrom | undefined;
     horizontalDeflectionRatio: number;
     signalType: NavSignalType;
   };
@@ -308,11 +337,13 @@ async function retrieveIfcData(client: IFCClient): Promise<{
     nav1HasLocalizer,
     nav1CourseRad,
     nav1HorizontalDeflectionRatio,
+    nav1ToFromIndicatorState,
     nav2ActiveFreqMHz,
     nav2HasGlideslope,
     nav2HasLocalizer,
     nav2CourseRad,
     nav2HorizontalDeflectionRatio,
+    nav2ToFromIndicatorState,
     gpsXtrackDistanceMeters,
   ] = await Promise.all([
     readFiniteNumber(client, "aircraft/0/systems/autopilot/spd/target"),
@@ -329,6 +360,7 @@ async function retrieveIfcData(client: IFCClient): Promise<{
     ),
     readFiniteNumber(client, navCourseStatePaths.NAV1),
     readFiniteNumber(client, navHorizontalDeflectionRatioStatePaths.NAV1),
+    readFiniteNumber(client, navToFromIndicatorStatePaths.NAV1),
     readFiniteNumber(client, "aircraft/0/systems/nav_sources/nav/2/frequency"),
     readBooleanState(
       client,
@@ -340,6 +372,7 @@ async function retrieveIfcData(client: IFCClient): Promise<{
     ),
     readFiniteNumber(client, navCourseStatePaths.NAV2),
     readFiniteNumber(client, navHorizontalDeflectionRatioStatePaths.NAV2),
+    readFiniteNumber(client, navToFromIndicatorStatePaths.NAV2),
     readFiniteNumber(client, gpsXtrackDistanceStatePath),
   ]);
 
@@ -351,18 +384,20 @@ async function retrieveIfcData(client: IFCClient): Promise<{
       ValueConverters.radToDeg(selectedHeadingDeg),
     ),
     nav1: {
-      activeFreqMHz: nav1ActiveFreqMHz,
+      activeFreqMHz: nav1ActiveFreqMHz / 100,
       courseDeg: normalizeCourseDegrees(
         ValueConverters.radToDeg(nav1CourseRad),
       ),
+      courseToFrom: readNavCourseToFrom(nav1ToFromIndicatorState),
       horizontalDeflectionRatio: nav1HorizontalDeflectionRatio,
       signalType: readNavSignalType(nav1HasLocalizer, nav1HasGlideslope),
     },
     nav2: {
-      activeFreqMHz: nav2ActiveFreqMHz,
+      activeFreqMHz: nav2ActiveFreqMHz / 100,
       courseDeg: normalizeCourseDegrees(
         ValueConverters.radToDeg(nav2CourseRad),
       ),
+      courseToFrom: readNavCourseToFrom(nav2ToFromIndicatorState),
       horizontalDeflectionRatio: nav2HorizontalDeflectionRatio,
       signalType: readNavSignalType(nav2HasLocalizer, nav2HasGlideslope),
     },
@@ -376,6 +411,7 @@ async function publishLiveGiaData(
   storedData: GIA63WData,
   courseMemory: CdiCourseMemory,
   deviationMemory: CdiDeviationMemory,
+  toFromMemory: CdiToFromMemory,
 ): Promise<void> {
   storedData.IFConnect.ifDataValid = client.isConnected;
 
@@ -387,12 +423,18 @@ async function publishLiveGiaData(
     storedData.heading.selectedDeg = ifData.selectedHeadingDeg;
     storedData.nav1.activeFreqMHz = ifData.nav1.activeFreqMHz;
     courseMemory.NAV1 = ifData.nav1.courseDeg;
+    if (ifData.nav1.courseToFrom) {
+      toFromMemory.NAV1 = ifData.nav1.courseToFrom;
+    }
     deviationMemory.NAV1 = normalizeNavDeflectionRatio(
       ifData.nav1.horizontalDeflectionRatio,
     );
     storedData.nav1.signalType = ifData.nav1.signalType;
     storedData.nav2.activeFreqMHz = ifData.nav2.activeFreqMHz;
     courseMemory.NAV2 = ifData.nav2.courseDeg;
+    if (ifData.nav2.courseToFrom) {
+      toFromMemory.NAV2 = ifData.nav2.courseToFrom;
+    }
     deviationMemory.NAV2 = normalizeNavDeflectionRatio(
       ifData.nav2.horizontalDeflectionRatio,
     );
@@ -403,6 +445,7 @@ async function publishLiveGiaData(
     );
     updateDisplayedCourse(storedData, courseMemory);
     updateDisplayedCourseDeviation(storedData, deviationMemory);
+    updateDisplayedCourseToFrom(storedData, toFromMemory);
   } catch (error) {
     context.log.error("Error retrieving GIA 63W data from IFC server", {
       error,
@@ -433,6 +476,7 @@ async function processGduInput(
   storedData: GIA63WData,
   courseMemory: CdiCourseMemory,
   deviationMemory: CdiDeviationMemory,
+  toFromMemory: CdiToFromMemory,
   payload: unknown,
 ): Promise<void> {
   const input = readGduInputPayload(payload);
@@ -445,6 +489,7 @@ async function processGduInput(
           storedData,
           courseMemory,
           deviationMemory,
+          toFromMemory,
           input,
         )
       : false;
@@ -479,6 +524,7 @@ async function applyGduInput(
   storedData: GIA63WData,
   courseMemory: CdiCourseMemory,
   deviationMemory: CdiDeviationMemory,
+  toFromMemory: CdiToFromMemory,
   input: GduInputPayload,
 ): Promise<boolean> {
   const direction = input.direction;
@@ -489,6 +535,7 @@ async function applyGduInput(
     );
     updateDisplayedCourse(storedData, courseMemory);
     updateDisplayedCourseDeviation(storedData, deviationMemory);
+    updateDisplayedCourseToFrom(storedData, toFromMemory);
     publishStoredGiaData(context, role, storedData);
 
     return true;
@@ -563,9 +610,7 @@ function readGduInputPayload(payload: unknown): GduInputPayload | undefined {
   };
 }
 
-function isPanelInputDirection(
-  value: unknown,
-): value is PanelInputDirection {
+function isPanelInputDirection(value: unknown): value is PanelInputDirection {
   return value === "clockwise" || value === "counterclockwise";
 }
 
@@ -622,6 +667,23 @@ function updateDisplayedCourseDeviation(
   );
 }
 
+function getCourseToFromForSource(
+  toFromMemory: CdiToFromMemory,
+  source: CdiSource,
+): CourseToFrom {
+  return toFromMemory[source];
+}
+
+function updateDisplayedCourseToFrom(
+  storedData: GIA63WData,
+  toFromMemory: CdiToFromMemory,
+): void {
+  storedData.navMaster.courseToFrom = getCourseToFromForSource(
+    toFromMemory,
+    storedData.navMaster.cdiSource,
+  );
+}
+
 function normalizeNavDeflectionRatio(deflectionRatio: number): number {
   return normalizeCourseDeviation(
     deflectionRatio / navDeflectionFullScaleRatio,
@@ -648,6 +710,18 @@ function normalizeCourseDeviation(courseDeviation: number): number {
   }
 
   return Math.max(-1, Math.min(1, courseDeviation));
+}
+
+function readNavCourseToFrom(indicatorState: number): CourseToFrom | undefined {
+  if (indicatorState === 1) {
+    return "TO";
+  }
+
+  if (indicatorState === 2) {
+    return "FROM";
+  }
+
+  return undefined;
 }
 
 async function writeNavCourse(

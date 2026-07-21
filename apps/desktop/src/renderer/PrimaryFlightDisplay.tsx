@@ -6,6 +6,10 @@ import {
   type CSSProperties,
   type ReactElement,
 } from "react";
+import attitudeIndicatorSrc from "./assets/AI.svg";
+import balanceBarSrc from "./assets/Balance Bar.svg";
+import rollPointerSrc from "./assets/Roll Pointer.svg";
+import rollScaleSrc from "./assets/Roll Scale.svg";
 
 interface PrimaryFlightDisplayProps {
   displayRole: "pfd" | "mfd";
@@ -16,11 +20,42 @@ interface PrimaryFlightDisplayProps {
 const frameWidth = 1452;
 const frameHeight = 948;
 const displayCanvas = {
+  height: 768,
+  width: 1024,
+} as const;
+const displayViewport = {
   height: 793,
   width: 1056,
   x: 197,
   y: 48,
 } as const;
+const attitudeIndicator = {
+  height: 38,
+  width: 414,
+  x: displayCanvas.width / 2,
+  top: 288,
+} as const;
+const rollScale = {
+  height: 120,
+  width: 385,
+  x: displayCanvas.width / 2,
+  top: 75,
+} as const;
+const rollPointer = {
+  height: 22,
+  width: 22,
+  x: displayCanvas.width / 2,
+  top: 97,
+} as const;
+const balanceBar = {
+  deflectionPixels: 26,
+  height: 5,
+  width: 30,
+  x: displayCanvas.width / 2,
+  top: 123,
+} as const;
+const rollScaleImage = createCanvasImage(rollScaleSrc);
+const balanceBarImage = createCanvasImage(balanceBarSrc);
 
 interface PfdDisplayData {
   airspeed: {
@@ -38,6 +73,7 @@ interface PfdDisplayData {
   attitude: {
     pitchDeg: number;
     rollDeg: number;
+    slipSkidDeflection: number;
   };
   environment: {
     isaC: number;
@@ -84,6 +120,7 @@ const dummyPfdData: PfdDisplayData = {
   attitude: {
     pitchDeg: 0,
     rollDeg: 0,
+    slipSkidDeflection: 0,
   },
   environment: {
     isaC: -6,
@@ -837,7 +874,23 @@ export function PrimaryFlightDisplay({
         id={`g1000-svg-panel__canvas-${displayRole}`}
         height={displayCanvas.height}
         width={displayCanvas.width}
-        style={displayCanvasStyle}
+        style={displayViewportStyle}
+      />
+      <img
+        aria-hidden="true"
+        className="g1000-svg-panel__attitude-indicator"
+        src={attitudeIndicatorSrc}
+        alt=""
+        draggable={false}
+        style={attitudeIndicatorStyle}
+      />
+      <img
+        aria-hidden="true"
+        className="g1000-svg-panel__roll-pointer"
+        src={rollPointerSrc}
+        alt=""
+        draggable={false}
+        style={rollPointerStyle}
       />
       <div className="g1000-svg-panel__hit-layer" aria-label="G1000 controls">
         {hitZones.map((zone) => (
@@ -897,15 +950,39 @@ function isSoftKeyPosition(position: number): position is SoftKeyPosition {
   return Number.isInteger(position) && position >= 1 && position <= 12;
 }
 
-const displayCanvasStyle: CSSProperties = {
+const displayViewportStyle: CSSProperties = {
   background: "#05070a",
   display: "block",
-  height: `${(displayCanvas.height / frameHeight) * 100}%`,
-  left: `${(displayCanvas.x / frameWidth) * 100}%`,
+  height: `${(displayViewport.height / frameHeight) * 100}%`,
+  left: `${(displayViewport.x / frameWidth) * 100}%`,
   pointerEvents: "none",
   position: "absolute",
-  top: `${(displayCanvas.y / frameHeight) * 100}%`,
-  width: `${(displayCanvas.width / frameWidth) * 100}%`,
+  top: `${(displayViewport.y / frameHeight) * 100}%`,
+  width: `${(displayViewport.width / frameWidth) * 100}%`,
+};
+
+const attitudeIndicatorStyle: CSSProperties = {
+  display: "block",
+  height: `${(((attitudeIndicator.height / displayCanvas.height) * displayViewport.height) / frameHeight) * 100}%`,
+  left: `${((displayViewport.x + (attitudeIndicator.x / displayCanvas.width) * displayViewport.width) / frameWidth) * 100}%`,
+  pointerEvents: "none",
+  position: "absolute",
+  top: `${((displayViewport.y + (attitudeIndicator.top / displayCanvas.height) * displayViewport.height) / frameHeight) * 100}%`,
+  transform: "translateX(-50%)",
+  userSelect: "none",
+  width: `${(((attitudeIndicator.width / displayCanvas.width) * displayViewport.width) / frameWidth) * 100}%`,
+};
+
+const rollPointerStyle: CSSProperties = {
+  display: "block",
+  height: `${(((rollPointer.height / displayCanvas.height) * displayViewport.height) / frameHeight) * 100}%`,
+  left: `${((displayViewport.x + (rollPointer.x / displayCanvas.width) * displayViewport.width) / frameWidth) * 100}%`,
+  pointerEvents: "none",
+  position: "absolute",
+  top: `${((displayViewport.y + (rollPointer.top / displayCanvas.height) * displayViewport.height) / frameHeight) * 100}%`,
+  transform: "translateX(-50%)",
+  userSelect: "none",
+  width: `${(((rollPointer.width / displayCanvas.width) * displayViewport.width) / frameWidth) * 100}%`,
 };
 
 function getHitZoneStyle(zone: HitZone): CSSProperties {
@@ -928,10 +1005,14 @@ function drawPfdCanvas(
     return;
   }
 
+  console.log(canvas.width);
+
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = "#05070a";
   context.fillRect(0, 0, canvas.width, canvas.height);
 
+  drawArtificialHorizon(context, canvas.width, canvas.height, data.attitude);
+  drawBalanceBar(context, data.attitude.slipSkidDeflection);
   drawSoftKeyLabels(context, softKeys, canvas.width, canvas.height);
   drawTemperatureInfo(
     context,
@@ -948,8 +1029,195 @@ function drawPfdCanvas(
     data.environment.transponderCode,
     data.environment.transponderMode,
   );
+  drawAutopilotPanel(context, canvas.width, canvas.height);
+  drawNavBox(context, canvas.width, canvas.height);
+
   drawNavStack(context, canvas.width, canvas.height, data.radios);
   drawCommStack(context, canvas.width, canvas.height, data.radios);
+}
+
+function drawArtificialHorizon(
+  context: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  attitude: PfdDisplayData["attitude"],
+): void {
+  const horizonTop = 58;
+  const levelSkyHeight = 230;
+  const horizonLineHeight = 1;
+  const levelGroundHeight = 460;
+  const pitchPixelsPerDegree = 142 / 20;
+  const horizonHeight = levelSkyHeight + horizonLineHeight + levelGroundHeight;
+  const levelHorizonLineY = horizonTop + levelSkyHeight;
+  const pitchOffsetY = attitude.pitchDeg * pitchPixelsPerDegree;
+  const horizonCenterX = canvasWidth / 2;
+  const rollRad = (-attitude.rollDeg * Math.PI) / 180;
+  const fillExtent = Math.hypot(canvasWidth, canvasHeight) * 2;
+
+  context.save();
+  context.beginPath();
+  context.rect(0, horizonTop, canvasWidth, horizonHeight);
+  context.clip();
+
+  context.translate(horizonCenterX, levelHorizonLineY);
+  context.rotate(rollRad);
+
+  context.save();
+  context.translate(0, pitchOffsetY);
+
+  context.fillStyle = "#277abd";
+  context.fillRect(-fillExtent / 2, -fillExtent, fillExtent, fillExtent);
+  context.fillStyle = "#8b8f92";
+  context.fillRect(-fillExtent / 2, 0, fillExtent, horizonLineHeight);
+  context.fillStyle = "#7a4a28";
+  context.fillRect(-fillExtent / 2, horizonLineHeight, fillExtent, fillExtent);
+
+  drawPitchBars(context, {
+    pitchDeg: attitude.pitchDeg,
+    pixelsPerDegree: pitchPixelsPerDegree,
+  });
+  context.restore();
+
+  drawRollScale(context, levelHorizonLineY);
+
+  context.restore();
+}
+
+function drawBalanceBar(
+  context: CanvasRenderingContext2D,
+  deflection: number,
+): void {
+  if (!balanceBarImage?.complete || balanceBarImage.naturalWidth === 0) {
+    return;
+  }
+
+  const x =
+    balanceBar.x -
+    balanceBar.width / 2 +
+    deflection * balanceBar.deflectionPixels;
+
+  context.drawImage(
+    balanceBarImage,
+    x,
+    balanceBar.top,
+    balanceBar.width,
+    balanceBar.height,
+  );
+}
+
+function drawRollScale(
+  context: CanvasRenderingContext2D,
+  levelHorizonLineY: number,
+): void {
+  if (!rollScaleImage?.complete || rollScaleImage.naturalWidth === 0) {
+    return;
+  }
+
+  const x = rollScale.x - displayCanvas.width / 2 - rollScale.width / 2;
+  const y = rollScale.top - levelHorizonLineY;
+
+  context.drawImage(rollScaleImage, x, y, rollScale.width, rollScale.height);
+}
+
+function drawPitchBars(
+  context: CanvasRenderingContext2D,
+  {
+    pitchDeg,
+    pixelsPerDegree,
+  }: {
+    pitchDeg: number;
+    pixelsPerDegree: number;
+  },
+): void {
+  const pitchStepDeg = 2.5;
+  const minPitchDeg = -80;
+  const maxPitchDeg = 80;
+  const visiblePitchUpDeg = 20;
+  const visiblePitchDownDeg = 15;
+  const minVisiblePitchDeg = Math.max(
+    minPitchDeg,
+    pitchDeg - visiblePitchDownDeg,
+  );
+  const maxVisiblePitchDeg = Math.min(
+    maxPitchDeg,
+    pitchDeg + visiblePitchUpDeg,
+  );
+  const minStep = Math.ceil(minVisiblePitchDeg / pitchStepDeg);
+  const maxStep = Math.floor(maxVisiblePitchDeg / pitchStepDeg);
+
+  context.save();
+  context.strokeStyle = "#ffffff";
+  context.fillStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.font = "800 13px Inter, sans-serif";
+  context.textBaseline = "middle";
+
+  for (let step = minStep; step <= maxStep; step++) {
+    if (step === 0) {
+      continue;
+    }
+
+    const pitchDeg = step * pitchStepDeg;
+    const pitchMark = getPitchMark(pitchDeg);
+
+    if (!pitchMark) {
+      continue;
+    }
+
+    const y = -pitchDeg * pixelsPerDegree;
+
+    context.beginPath();
+    context.moveTo(-pitchMark.width / 2, y);
+    context.lineTo(pitchMark.width / 2, y);
+    context.stroke();
+
+    if (pitchMark.hasLabel) {
+      const label = Math.abs(pitchDeg).toString();
+      const labelGap = 9;
+
+      context.textAlign = "right";
+      context.fillText(label, -pitchMark.width / 2 - labelGap, y);
+      context.textAlign = "left";
+      context.fillText(label, pitchMark.width / 2 + labelGap, y);
+    }
+  }
+
+  context.restore();
+}
+
+function getPitchMark(
+  pitchDeg: number,
+): { hasLabel: boolean; width: number } | undefined {
+  const absolutePitchDeg = Math.abs(pitchDeg);
+
+  if (isPitchMultiple(pitchDeg, 10) && absolutePitchDeg <= 80) {
+    return { hasLabel: true, width: 110 };
+  }
+
+  if (isPitchMultiple(pitchDeg, 5) && pitchDeg >= -25 && pitchDeg <= 45) {
+    return { hasLabel: false, width: 56 };
+  }
+
+  if (pitchDeg >= -20 && pitchDeg <= 20) {
+    return { hasLabel: false, width: 30 };
+  }
+
+  return undefined;
+}
+
+function isPitchMultiple(value: number, multiple: number): boolean {
+  return Math.abs(value / multiple - Math.round(value / multiple)) < 1e-9;
+}
+
+function createCanvasImage(src: string): HTMLImageElement | undefined {
+  if (typeof Image === "undefined") {
+    return undefined;
+  }
+
+  const image = new Image();
+  image.src = src;
+
+  return image;
 }
 
 function drawXPDRTimeInfo(
@@ -1241,8 +1509,9 @@ function drawCommStack(
   const row1Y = 0;
   const row2Y = 0 + row1Height;
   const rowWidth = 265;
-  const frequencyX = canvasWidth - rowWidth + 41;
-  const frequencyWidth = rowWidth - 41;
+  const labelWidth = 41;
+  const frequencyX = canvasWidth - rowWidth;
+  const frequencyWidth = rowWidth - labelWidth;
   const frequencyPaddingX = 5;
 
   // Draw the comm stack
@@ -1265,13 +1534,9 @@ function drawCommStack(
   const fontSize = 11;
   context.fillStyle = "#dce2e5";
   context.font = `800 ${fontSize}px Inter, sans-serif`;
-  context.textAlign = "left";
+  context.textAlign = "right";
   context.textBaseline = "middle";
-  context.fillText(
-    "COMM1",
-    canvasWidth - rowWidth + 5,
-    row1Y + row1Height - fontSize,
-  );
+  context.fillText("COM1", canvasWidth - 5, row1Y + row1Height - fontSize);
 
   // Draw Comm1 frequency
   drawFlexTextRow(context, {
@@ -1290,13 +1555,9 @@ function drawCommStack(
   // Draw Comm2 text
   context.fillStyle = "#dce2e5";
   context.font = `800 ${fontSize}px Inter, sans-serif`;
-  context.textAlign = "left";
+  context.textAlign = "right";
   context.textBaseline = "middle";
-  context.fillText(
-    "COMM2",
-    canvasWidth - rowWidth + 5,
-    row2Y + row2Height - fontSize,
-  );
+  context.fillText("COM2", canvasWidth - 5, row2Y + row2Height - fontSize);
 
   // Draw Comm2 frequency
   drawFlexTextRow(context, {
@@ -1318,7 +1579,7 @@ function drawCommStack(
     paddingX: frequencyPaddingX,
     slotIndex: 2,
     width: frequencyWidth,
-    x: canvasWidth - frequencyWidth,
+    x: frequencyX,
     y: radios.comSource === 1 ? row1Y : row2Y,
   });
 }
@@ -1357,6 +1618,94 @@ function drawActiveNavFrequencyBox(
     height - insetY * 2,
   );
   context.restore();
+}
+
+function drawNavBox(
+  context: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+): void {
+  // Nav alert box
+  const alertWidth = 282;
+  const alertHeight = 58 / 2;
+  const alertX = 263;
+  const alertY = 0;
+
+  context.fillStyle = "#2B2C2F";
+  context.fillRect(alertX, alertY, alertWidth, alertHeight);
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  // Draw Right border of the nav alert box
+  context.beginPath();
+  context.moveTo(alertX + alertWidth, alertY);
+  context.lineTo(alertX + alertWidth, alertY + alertHeight);
+  context.stroke();
+
+  // Nav info box
+  const infoWidth = 216;
+  const infoHeight = 58 / 2;
+  const infoX = alertX + alertWidth;
+  const infoY = alertY;
+
+  context.fillStyle = "#2B2C2F";
+  context.fillRect(infoX, infoY, infoWidth, infoHeight);
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+
+  // Draw Bottom border of the both boxes
+  context.beginPath();
+  context.moveTo(alertX, alertY + alertHeight);
+  context.lineTo(infoX + infoWidth, infoY + infoHeight);
+  context.stroke();
+}
+
+function drawAutopilotPanel(
+  context: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+): void {
+  //Lateral Box
+  const lateralWidth = 126;
+  const lateralHeight = 58 / 2;
+  const lateralX = 265;
+  const lateralY = 58 / 2;
+
+  context.fillStyle = "#2B2C2F";
+  context.fillRect(lateralX, lateralY, lateralWidth, lateralHeight);
+
+  // Draw right border
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(lateralX + lateralWidth, lateralY);
+  context.lineTo(lateralX + lateralWidth, lateralY + lateralHeight);
+  context.stroke();
+
+  // AP Status Box
+  const apStatusWidth = 92;
+  const apStatusHeight = 58 / 2;
+  const apStatusX = lateralX + lateralWidth;
+  const apStatusY = lateralY;
+
+  context.fillStyle = "#2B2C2F";
+  context.fillRect(apStatusX, apStatusY, apStatusWidth, apStatusHeight);
+
+  // Draw right border of AP Status Box
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(apStatusX + apStatusWidth, apStatusY);
+  context.lineTo(apStatusX + apStatusWidth, apStatusY + apStatusHeight);
+  context.stroke();
+
+  //Vertical Box
+  const verticalWidth = 278;
+  const verticalHeight = 58 / 2;
+  const verticalX = apStatusX + apStatusWidth;
+  const verticalY = lateralY;
+
+  context.fillStyle = "#2B2C2F";
+  context.fillRect(verticalX, verticalY, verticalWidth, verticalHeight);
 }
 
 function formatHeadingLabel(value: number): string {

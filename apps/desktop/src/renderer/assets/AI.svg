@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="414px" height="38px" viewBox="0 0 414 38" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Attitude Indicator</title>
+    <defs>
+        <path d="M207.349,0.056 L326.449219,38 L273.390625,38 L207.31,0.079 L141.230469,38 L88.171875,38 L207.27,0.056 L207.171875,0 L207.31,0.044 L207.449219,0 Z M46,4.5 C46,6.98528137 43.9852814,9 41.5,9 L4.5,9 C2.01471863,9 0,6.98528137 0,4.5 C0,2.01471863 2.01471863,0 4.5,0 L41.5,0 C43.9852814,0 46,2.01471863 46,4.5 Z M414,4.5 C414,6.98528137 411.985281,9 409.5,9 L372.5,9 C370.014719,9 368,6.98528137 368,4.5 C368,2.01471863 370.014719,0 372.5,0 L409.5,0 C411.985281,0 414,2.01471863 414,4.5 Z" id="path-1"></path>
+    </defs>
+    <g id="Attitude-Indicator" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd">
+        <rect id="Rectangle" fill="#E6D255" x="0" y="0" width="46" height="9" rx="4.5"></rect>
+        <rect id="Rectangle" fill="#E6D255" x="368" y="0" width="46" height="9" rx="4.5"></rect>
+        <polygon id="Polygon" fill="#E6D255" points="207.449219 0 141.230469 38 88.171875 38"></polygon>
+        <polygon id="Polygon" fill="#E6D255" transform="translate(266.8105, 19) scale(-1, 1) translate(-266.8105, -19)" points="326.449219 0 260.230469 38 207.171875 38"></polygon>
+    </g>
+</svg>

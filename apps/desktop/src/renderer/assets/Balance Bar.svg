@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="31px" height="5px" viewBox="0 0 31 5" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Balance Bar</title>
+    <defs>
+        <path d="M31,5.00063055 L28.4923096,1.07469589e-13 L2.493927,1.07469589e-13 L0,5.00063055 L31,5.00063055 Z" id="path-1"></path>
+    </defs>
+    <g id="Balance-Bar" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd">
+        <polygon id="Path" fill="#FFFFFF" points="31 5.00063055 28.4923096 -1.81113218e-13 2.493927 1.07469589e-13 -1.10134124e-13 5.00063055"></polygon>
+    </g>
+</svg>

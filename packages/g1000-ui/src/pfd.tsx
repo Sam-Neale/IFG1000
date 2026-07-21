@@ -9,6 +9,11 @@ const frameWidth = 1452;
 const frameHeight = 948;
 
 const displayCanvas = {
+  height: 768,
+  width: 1024,
+} as const;
+
+const displayViewport = {
   height: 793,
   width: 1056,
   x: 197,
@@ -38,19 +43,19 @@ export function PrimaryFlightDisplay({
         id={`g1000-svg-panel__canvas-${displayRole}`}
         height={displayCanvas.height}
         width={displayCanvas.width}
-        style={displayCanvasStyle}
+        style={displayViewportStyle}
       ></canvas>
     </article>
   );
 }
 
-const displayCanvasStyle: CSSProperties = {
+const displayViewportStyle: CSSProperties = {
   background: "#05070a",
   display: "block",
-  height: `${(displayCanvas.height / frameHeight) * 100}%`,
-  left: `${(displayCanvas.x / frameWidth) * 100}%`,
+  height: `${(displayViewport.height / frameHeight) * 100}%`,
+  left: `${(displayViewport.x / frameWidth) * 100}%`,
   pointerEvents: "none",
   position: "absolute",
-  top: `${(displayCanvas.y / frameHeight) * 100}%`,
-  width: `${(displayCanvas.width / frameWidth) * 100}%`,
+  top: `${(displayViewport.y / frameHeight) * 100}%`,
+  width: `${(displayViewport.width / frameWidth) * 100}%`,
 };

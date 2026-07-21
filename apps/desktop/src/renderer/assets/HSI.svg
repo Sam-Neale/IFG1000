@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="290px" height="290px" viewBox="0 0 290 290" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>HSI</title>
+    <defs>
+        <path d="M290,145 C290,225.081289 225.081289,290 145,290 C64.9187113,290 0,225.081289 0,145 C0,64.9187113 64.9187113,0 145,0 C225.081289,0 290,64.9187113 290,145 Z" id="path-1"></path>
+    </defs>
+    <g id="HSI" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd" stroke-width="1">
+        <g>
+            <g id="Group">
+                <circle id="Oval" fill-opacity="0.5" fill="#404040" cx="145" cy="145" r="145"></circle>
+                <g id="Ticks" stroke="#FFFFFF" stroke-linecap="square">
+                    <g id="Major-Ticks">
+                        <line x1="145" y1="0" x2="145" y2="14" id="Path"></line>
+                        <line x1="168.963443" y1="2.09653813" x2="168.963443" y2="16.0965382" id="Path" transform="translate(168.9634, 9.0965) rotate(10) translate(-168.9634, -9.0965)"></line>
+                        <line x1="192.198775" y1="8.32241039" x2="192.198775" y2="22.3224104" id="Path" transform="translate(192.1988, 15.3224) rotate(20) translate(-192.1988, -15.3224)"></line>
+                        <line x1="214.000003" y1="18.4884951" x2="214.000003" y2="32.4884951" id="Path" transform="translate(214, 25.4885) rotate(30) translate(-214, -25.4885)"></line>
+                        <line x1="233.704714" y1="32.2858681" x2="233.704714" y2="46.2858681" id="Path" transform="translate(233.7047, 39.2859) rotate(40) translate(-233.7047, -39.2859)"></line>
+                        <line x1="250.714114" y1="49.2953316" x2="250.714114" y2="63.2953316" id="Path" transform="translate(250.7141, 56.2953) rotate(50) translate(-250.7141, -56.2953)"></line>
+                        <line x1="264.511503" y1="69.0000052" x2="264.511503" y2="83.0000052" id="Path" transform="translate(264.5115, 76) rotate(60) translate(-264.5115, -76)"></line>
+                        <line x1="274.677575" y1="90.8011901" x2="274.677575" y2="104.80119" id="Path" transform="translate(274.6776, 97.8012) rotate(70) translate(-274.6776, -97.8012)"></line>
+                        <line x1="280.903543" y1="114.036562" x2="280.903543" y2="128.036562" id="Path" transform="translate(280.9035, 121.0366) rotate(80) translate(-280.9035, -121.0366)"></line>
+                        <line x1="283" y1="138" x2="283" y2="152" id="Path" transform="translate(283, 145) rotate(90) translate(-283, -145)"></line>
+                        <line x1="280.903457" y1="161.963362" x2="280.903457" y2="175.963362" id="Path" transform="translate(280.9035, 168.9634) rotate(100) translate(-280.9035, -168.9634)"></line>
+                        <line x1="274.677625" y1="185.19879" x2="274.677625" y2="199.19879" id="Path" transform="translate(274.6776, 192.1988) rotate(110) translate(-274.6776, -192.1988)"></line>
+                        <line x1="264.511497" y1="207.000005" x2="264.511497" y2="221.000005" id="Path" transform="translate(264.5115, 214) rotate(120) translate(-264.5115, -214)"></line>
+                        <line x1="250.714086" y1="226.704732" x2="250.714086" y2="240.704732" id="Path" transform="translate(250.7141, 233.7047) rotate(130) translate(-250.7141, -233.7047)"></line>
+                        <line x1="233.704686" y1="243.714068" x2="233.704686" y2="257.714068" id="Path" transform="translate(233.7047, 250.7141) rotate(140) translate(-233.7047, -250.7141)"></line>
+                        <line x1="213.999997" y1="257.511495" x2="213.999997" y2="271.511495" id="Path" transform="translate(214, 264.5115) rotate(150) translate(-214, -264.5115)"></line>
+                        <line x1="192.198825" y1="267.67761" x2="192.198825" y2="281.67761" id="Path" transform="translate(192.1988, 274.6776) rotate(160) translate(-192.1988, -274.6776)"></line>
+                        <line x1="168.963357" y1="273.903538" x2="168.963357" y2="287.903538" id="Path" transform="translate(168.9634, 280.9035) rotate(170) translate(-168.9634, -280.9035)"></line>
+                        <line x1="145" y1="276" x2="145" y2="290" id="Path" transform="translate(145, 283) rotate(180) translate(-145, -283)"></line>
+                        <line x1="121.036643" y1="273.903538" x2="121.036643" y2="287.903538" id="Path" transform="translate(121.0366, 280.9035) rotate(-170) translate(-121.0366, -280.9035)"></line>
+                        <line x1="97.8011749" y1="267.67761" x2="97.8011749" y2="281.67761" id="Path" transform="translate(97.8012, 274.6776) rotate(-160) translate(-97.8012, -274.6776)"></line>
+                        <line x1="76.000003" y1="257.511495" x2="76.000003" y2="271.511495" id="Path" transform="translate(76, 264.5115) rotate(-150) translate(-76, -264.5115)"></line>
+                        <line x1="56.2953136" y1="243.714068" x2="56.2953136" y2="257.714068" id="Path" transform="translate(56.2953, 250.7141) rotate(-140) translate(-56.2953, -250.7141)"></line>
+                        <line x1="39.2859137" y1="226.704732" x2="39.2859137" y2="240.704732" id="Path" transform="translate(39.2859, 233.7047) rotate(-130) translate(-39.2859, -233.7047)"></line>
+                        <line x1="25.4885028" y1="207.000005" x2="25.4885028" y2="221.000005" id="Path" transform="translate(25.4885, 214) rotate(-120) translate(-25.4885, -214)"></line>
+                        <line x1="15.3223749" y1="185.19879" x2="15.3223749" y2="199.19879" id="Path" transform="translate(15.3224, 192.1988) rotate(-110) translate(-15.3224, -192.1988)"></line>
+                        <line x1="9.09654303" y1="161.963362" x2="9.09654303" y2="175.963362" id="Path" transform="translate(9.0965, 168.9634) rotate(-100) translate(-9.0965, -168.9634)"></line>
+                        <line x1="7" y1="138" x2="7" y2="152" id="Path" transform="translate(7, 145) rotate(-90) translate(-7, -145)"></line>
+                        <line x1="9.09645697" y1="114.036562" x2="9.09645697" y2="128.036562" id="Path" transform="translate(9.0965, 121.0366) rotate(-80) translate(-9.0965, -121.0366)"></line>
+                        <line x1="15.3224251" y1="90.8011898" x2="15.3224251" y2="104.80119" id="Path" transform="translate(15.3224, 97.8012) rotate(-70) translate(-15.3224, -97.8012)"></line>
+                        <line x1="25.4884972" y1="69.0000049" x2="25.4884972" y2="83.0000049" id="Path" transform="translate(25.4885, 76) rotate(-60) translate(-25.4885, -76)"></line>
+                        <line x1="39.2858862" y1="49.2953318" x2="39.2858862" y2="63.2953318" id="Path" transform="translate(39.2859, 56.2953) rotate(-50) translate(-39.2859, -56.2953)"></line>
+                        <line x1="56.2952862" y1="32.2858682" x2="56.2952862" y2="46.2858682" id="Path" transform="translate(56.2953, 39.2859) rotate(-40) translate(-56.2953, -39.2859)"></line>
+                        <line x1="75.9999971" y1="18.4884951" x2="75.9999971" y2="32.4884951" id="Path" transform="translate(76, 25.4885) rotate(-30) translate(-76, -25.4885)"></line>
+                        <line x1="97.8012252" y1="8.32241032" x2="97.8012252" y2="22.3224103" id="Path" transform="translate(97.8012, 15.3224) rotate(-20) translate(-97.8012, -15.3224)"></line>
+                        <line x1="121.036557" y1="2.09653813" x2="121.036557" y2="16.0965382" id="Path" transform="translate(121.0366, 9.0965) rotate(-10) translate(-121.0366, -9.0965)"></line>
+                    </g>
+                    <g id="Minor-Ticks" transform="translate(0.5082, 0.5082)">
+                        <line x1="156.824342" y1="0.0302608835" x2="156.824342" y2="7.03026088" id="Path" transform="translate(156.8243, 3.5303) rotate(5) translate(-156.8243, -3.5303)"></line>
+                        <line x1="181.114694" y1="4.31330286" x2="181.114694" y2="11.3133029" id="Path" transform="translate(181.1147, 7.8133) rotate(15) translate(-181.1147, -7.8133)"></line>
+                        <line x1="204.292303" y1="12.7492556" x2="204.292303" y2="19.7492556" id="Path" transform="translate(204.2923, 16.2493) rotate(25) translate(-204.2923, -16.2493)"></line>
+                        <line x1="225.652874" y1="25.0817787" x2="225.652874" y2="32.0817787" id="Path" transform="translate(225.6529, 28.5818) rotate(35) translate(-225.6529, -28.5818)"></line>
+                        <line x1="244.547405" y1="40.9362105" x2="244.547405" y2="47.9362105" id="Path" transform="translate(244.5474, 44.4362) rotate(45) translate(-244.5474, -44.4362)"></line>
+                        <line x1="260.401769" y1="59.8307411" x2="260.401769" y2="66.8307411" id="Path" transform="translate(260.4018, 63.3307) rotate(55) translate(-260.4018, -63.3307)"></line>
+                        <line x1="272.734353" y1="81.1912726" x2="272.734353" y2="88.1912726" id="Path" transform="translate(272.7344, 84.6913) rotate(65) translate(-272.7344, -84.6913)"></line>
+                        <line x1="281.170282" y1="104.368914" x2="281.170282" y2="111.368914" id="Path" transform="translate(281.1703, 107.8689) rotate(75) translate(-281.1703, -107.8689)"></line>
+                        <line x1="285.453417" y1="128.659254" x2="285.453417" y2="135.659254" id="Path" transform="translate(285.4534, 132.1593) rotate(85) translate(-285.4534, -132.1593)"></line>
+                        <line x1="285.453349" y1="153.324252" x2="285.453349" y2="160.324252" id="Path" transform="translate(285.4533, 156.8243) rotate(95) translate(-285.4533, -156.8243)"></line>
+                        <line x1="281.170284" y1="177.61471" x2="281.170284" y2="184.61471" id="Path" transform="translate(281.1703, 181.1147) rotate(105) translate(-281.1703, -181.1147)"></line>
+                        <line x1="272.734415" y1="200.792265" x2="272.734415" y2="207.792265" id="Path" transform="translate(272.7344, 204.2923) rotate(115) translate(-272.7344, -204.2923)"></line>
+                        <line x1="260.401799" y1="222.15293" x2="260.401799" y2="229.15293" id="Path" transform="translate(260.4018, 225.6529) rotate(125) translate(-260.4018, -225.6529)"></line>
+                        <line x1="244.547365" y1="241.047397" x2="244.547365" y2="248.047397" id="Path" transform="translate(244.5474, 244.5474) rotate(135) translate(-244.5474, -244.5474)"></line>
+                        <line x1="225.652899" y1="256.901764" x2="225.652899" y2="263.901764" id="Path" transform="translate(225.6529, 260.4018) rotate(145) translate(-225.6529, -260.4018)"></line>
+                        <line x1="204.292315" y1="269.23443" x2="204.292315" y2="276.23443" id="Path" transform="translate(204.2923, 272.7344) rotate(155) translate(-204.2923, -272.7344)"></line>
+                        <line x1="181.114684" y1="277.670285" x2="181.114684" y2="284.670285" id="Path" transform="translate(181.1147, 281.1703) rotate(165) translate(-181.1147, -281.1703)"></line>
+                        <line x1="156.824249" y1="281.953442" x2="156.824249" y2="288.953442" id="Path" transform="translate(156.8242, 285.4534) rotate(175) translate(-156.8242, -285.4534)"></line>
+                        <line x1="132.159317" y1="281.953441" x2="132.159317" y2="288.953441" id="Path" transform="translate(132.1593, 285.4534) rotate(-175) translate(-132.1593, -285.4534)"></line>
+                        <line x1="107.868882" y1="277.67028" x2="107.868882" y2="284.67028" id="Path" transform="translate(107.8689, 281.1703) rotate(-165) translate(-107.8689, -281.1703)"></line>
+                        <line x1="84.6912525" y1="269.234422" x2="84.6912525" y2="276.234422" id="Path" transform="translate(84.6913, 272.7344) rotate(-155) translate(-84.6913, -272.7344)"></line>
+                        <line x1="63.3306694" y1="256.901754" x2="63.3306694" y2="263.901754" id="Path" transform="translate(63.3307, 260.4018) rotate(-145) translate(-63.3307, -260.4018)"></line>
+                        <line x1="44.4362055" y1="241.047384" x2="44.4362055" y2="248.047384" id="Path" transform="translate(44.4362, 244.5474) rotate(-135) translate(-44.4362, -244.5474)"></line>
+                        <line x1="28.5817743" y1="222.152916" x2="28.5817743" y2="229.152916" id="Path" transform="translate(28.5818, 225.6529) rotate(-125) translate(-28.5818, -225.6529)"></line>
+                        <line x1="16.2493035" y1="200.792339" x2="16.2493035" y2="207.792339" id="Path" transform="translate(16.2493, 204.2923) rotate(-115) translate(-16.2493, -204.2923)"></line>
+                        <line x1="7.81329441" y1="177.614692" x2="7.81329441" y2="184.614692" id="Path" transform="translate(7.8133, 181.1147) rotate(-105) translate(-7.8133, -181.1147)"></line>
+                        <line x1="3.53034212" y1="153.324334" x2="3.53034212" y2="160.324334" id="Path" transform="translate(3.5303, 156.8243) rotate(-95) translate(-3.5303, -156.8243)"></line>
+                        <line x1="3.53025931" y1="128.659335" x2="3.53025931" y2="135.659335" id="Path" transform="translate(3.5303, 132.1593) rotate(-85) translate(-3.5303, -132.1593)"></line>
+                        <line x1="7.81330648" y1="104.368896" x2="7.81330648" y2="111.368896" id="Path" transform="translate(7.8133, 107.8689) rotate(-75) translate(-7.8133, -107.8689)"></line>
+                        <line x1="16.2492964" y1="81.1913467" x2="16.2492964" y2="88.1913467" id="Path" transform="translate(16.2493, 84.6913) rotate(-65) translate(-16.2493, -84.6913)"></line>
+                        <line x1="28.5818243" y1="59.8307265" x2="28.5818243" y2="66.8307265" id="Path" transform="translate(28.5818, 63.3307) rotate(-55) translate(-28.5818, -63.3307)"></line>
+                        <line x1="44.4361912" y1="40.9361973" x2="44.4361912" y2="47.9361973" id="Path" transform="translate(44.4362, 44.4362) rotate(-45) translate(-44.4362, -44.4362)"></line>
+                        <line x1="63.3307243" y1="25.0817682" x2="63.3307243" y2="32.0817682" id="Path" transform="translate(63.3307, 28.5818) rotate(-35) translate(-63.3307, -28.5818)"></line>
+                        <line x1="84.6912964" y1="12.7492479" x2="84.6912964" y2="19.7492479" id="Path" transform="translate(84.6913, 16.2492) rotate(-25) translate(-84.6913, -16.2492)"></line>
+                        <line x1="107.868906" y1="4.3132982" x2="107.868906" y2="11.3132982" id="Path" transform="translate(107.8689, 7.8133) rotate(-15) translate(-107.8689, -7.8133)"></line>
+                        <line x1="132.159259" y1="0.0302593147" x2="132.159259" y2="7.03025931" id="Path" transform="translate(132.1593, 3.5303) rotate(-5) translate(-132.1593, -3.5303)"></line>
+                    </g>
+                </g>
+            </g>
+            <text id="N" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <tspan x="136.4491" y="38.0479">N</tspan>
+            </text>
+            <g id="3" transform="translate(203.0193, 44.6076) rotate(30) translate(-203.0193, -44.6076)translate(196.0193, 29.6076)" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <text>
+                    <tspan x="0" y="24">3</tspan>
+                </text>
+            </g>
+            <g id="6" transform="translate(245.4424, 87.0673) rotate(60) translate(-245.4424, -87.0673)translate(238.4424, 72.0673)" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <text>
+                    <tspan x="-2.84217094e-14" y="24">6</tspan>
+                </text>
+            </g>
+            <g id="E" transform="translate(260.9521, 145.3625) rotate(90) translate(-260.9521, -145.3625)translate(252.9521, 130.3625)" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <text>
+                    <tspan x="-2.84217094e-14" y="24">E</tspan>
+                </text>
+            </g>
+            <g id="12" transform="translate(245.3674, 203.0627) rotate(120) translate(-245.3674, -203.0627)translate(231.3674, 188.0627)" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <text>
+                    <tspan x="1.42108547e-14" y="24">12</tspan>
+                </text>
+            </g>
+            <g id="15" transform="translate(202.8893, 245.4673) rotate(150) translate(-202.8893, -245.4673)translate(188.8893, 230.4673)" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <text>
+                    <tspan x="-2.84217094e-14" y="24">15</tspan>
+                </text>
+            </g>
+            <text id="S" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <tspan x="137.8366" y="269.9521">S</tspan>
+            </text>
+            <g id="21" transform="translate(86.9375, 245.3674) rotate(-150) translate(-86.9375, -245.3674)translate(72.9375, 230.3674)" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <text>
+                    <tspan x="0" y="24">21</tspan>
+                </text>
+            </g>
+            <g id="24" transform="translate(44.5326, 202.8894) rotate(-120) translate(-44.5326, -202.8894)translate(30.5326, 187.8894)" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <text>
+                    <tspan x="0" y="24">24</tspan>
+                </text>
+            </g>
+            <g id="W" transform="translate(29.0479, 144.6125) rotate(-90) translate(-29.0479, -144.6125)translate(17.5479, 129.6125)" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <text>
+                    <tspan x="0" y="24">W</tspan>
+                </text>
+            </g>
+            <g id="30" transform="translate(44.6326, 86.9374) rotate(-60) translate(-44.6326, -86.9374)translate(30.6326, 71.9374)" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <text>
+                    <tspan x="0" y="24">30</tspan>
+                </text>
+            </g>
+            <g id="33" transform="translate(87.1106, 44.5326) rotate(-30) translate(-87.1106, -44.5326)translate(73.1106, 29.5326)" fill="#FFFFFF" fill-rule="nonzero" font-family="Helvetica-Light, Helvetica" font-size="25" font-weight="300">
+                <text>
+                    <tspan x="0" y="24">33</tspan>
+                </text>
+            </g>
+        </g>
+    </g>
+</svg>

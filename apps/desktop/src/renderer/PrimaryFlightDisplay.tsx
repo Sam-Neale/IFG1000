@@ -8,6 +8,9 @@ import {
 } from "react";
 import attitudeIndicatorSrc from "./assets/AI.svg";
 import balanceBarSrc from "./assets/Balance Bar.svg";
+import cdiDotsSrc from "./assets/CDI Dots.svg";
+import hsiSrc from "./assets/HSI.svg";
+import hsiPlaneSrc from "./assets/HSI Plane.svg";
 import rollPointerSrc from "./assets/Roll Pointer.svg";
 import rollScaleSrc from "./assets/Roll Scale.svg";
 
@@ -54,6 +57,79 @@ const balanceBar = {
   width: 30,
   x: attitudeReferenceX,
   top: 123,
+} as const;
+const hsi = {
+  height: 290,
+  width: 290,
+  x: 315,
+  y: 442,
+} as const;
+const hsiDots = {
+  height: (14 / 145) * 142,
+  width: 142,
+} as const;
+const hsiPlane = {
+  height: 40,
+  width: 40,
+} as const;
+const hsiOuterTicks = {
+  anglesDeg: [45, 90, 135, 225, 270, 315],
+  length: 16,
+  lineWidth: 2,
+} as const;
+const hsiHeadingBug = {
+  cutoutHeight: 8,
+  cutoutWidth: 12,
+  height: 12,
+  width: 26,
+} as const;
+const presentHeadingBox = {
+  fontPx: 24,
+  height: 33,
+  width: 70,
+  x: 426,
+  y: 401,
+} as const;
+const presentHeadingPointer = {
+  hsiInset: hsiHeadingBug.cutoutHeight,
+  width: hsiHeadingBug.cutoutWidth,
+} as const;
+const hsiNavSourceText = {
+  fontPx: 16,
+  x: 408,
+  y: 541,
+} as const;
+const hsiNavPhaseText = {
+  ...hsiNavSourceText,
+  x: 482,
+} as const;
+const hsiCoursePointer = {
+  arrowHeight: 16,
+  arrowWidth: 33,
+  courseDeviationLineLength: 108,
+  doubleLineOffset: 4,
+  lineWidth: 4,
+  leadingLineLength: 53,
+  trailingLineLength: 67,
+  deviationGap: 119,
+  toFromArrowHeight: 15,
+  toFromArrowWidth: 28,
+} as const;
+const hsiCourseDeviationScale = {
+  dotImageWidth: 144,
+  outerDotCenterInset: 7,
+} as const;
+const hsiTurnRateIndicator = {
+  arrowHeadLength: 12,
+  arrowHeadWidth: 10,
+  backgroundColor: "rgba(64, 64, 64, 0.5)",
+  height: 18,
+  maxArrowRateDegPerSec: 4,
+  predictionSeconds: 6,
+  standardRateDegPerSec: 3,
+  tickLineWidth: 2,
+  trendLineWidth: 4,
+  topY: 424,
 } as const;
 const airspeedTape = {
   height: 342,
@@ -165,8 +241,24 @@ const airspeedRangeLimits = {
 } as const;
 const rollScaleImage = createCanvasImage(rollScaleSrc);
 const balanceBarImage = createCanvasImage(balanceBarSrc);
+const hsiImage = createCanvasImage(hsiSrc);
+const hsiDotsImage = createCanvasImage(cdiDotsSrc);
+const hsiPlaneImage = createCanvasImage(hsiPlaneSrc);
 
-type CdiSource = "GPS" | "VOR1" | "VOR2";
+type CdiSource = "GPS" | "NAV1" | "NAV2";
+type CourseToFrom = "TO" | "FROM";
+type NavSignalType = "VOR" | "LOC";
+type NavPhase =
+  | "DPRT"
+  | "TERM"
+  | "ENR"
+  | "OCN"
+  | "LNAV"
+  | "LNAV + V"
+  | "L/VNAV"
+  | "LPV"
+  | "LP"
+  | "MAPR";
 
 interface PfdDisplayData {
   airspeed: {
@@ -198,6 +290,7 @@ interface PfdDisplayData {
     currentDeg: number;
     desiredTrackDeg: number;
     selectedDeg: number;
+    turnRateDegPerSec: number;
   };
   radios: {
     bearingDeg: number;
@@ -207,11 +300,17 @@ interface PfdDisplayData {
     com2Standby: string;
     comSource: 1 | 2;
     cdiSource: CdiSource;
+    courseDeviation: number;
+    courseToFrom: CourseToFrom;
     distanceNm: number;
+    isActiveNavaidReceived: boolean;
     nav1Active: string;
+    nav1SignalType: NavSignalType;
     nav1Standby: string;
     nav2Active: string;
+    nav2SignalType: NavSignalType;
     nav2Standby: string;
+    navPhase: NavPhase;
     navSource: 1 | 2;
     waypoint: string;
   };
@@ -246,9 +345,10 @@ const dummyPfdData: PfdDisplayData = {
     transponderMode: "ALT",
   },
   heading: {
-    currentDeg: 108,
+    currentDeg: 326,
     desiredTrackDeg: 105,
-    selectedDeg: 10,
+    selectedDeg: 15,
+    turnRateDegPerSec: 2,
   },
   radios: {
     bearingDeg: 105,
@@ -258,11 +358,17 @@ const dummyPfdData: PfdDisplayData = {
     com2Standby: "118.400",
     comSource: 1,
     cdiSource: "GPS",
+    courseDeviation: 0,
+    courseToFrom: "TO",
     distanceNm: 51.5,
+    isActiveNavaidReceived: true,
     nav1Active: "108.00",
+    nav1SignalType: "VOR",
     nav1Standby: "117.95",
     nav2Active: "108.00",
+    nav2SignalType: "VOR",
     nav2Standby: "117.95",
+    navPhase: "ENR",
     navSource: 1,
     waypoint: "KORD",
   },
@@ -1047,10 +1153,10 @@ export function PrimaryFlightDisplay({
 function getNextCdiSource(source: CdiSource): CdiSource {
   switch (source) {
     case "GPS":
-      return "VOR1";
-    case "VOR1":
-      return "VOR2";
-    case "VOR2":
+      return "NAV1";
+    case "NAV1":
+      return "NAV2";
+    case "NAV2":
       return "GPS";
   }
 }
@@ -1165,6 +1271,8 @@ function drawPfdCanvas(
   drawSelectedAltitudeBox(context, data.altitude.selectedAltitudeFt);
   drawBarometerBox(context, data.altitude);
   drawVerticalSpeedIndicator(context, data.altitude.verticalSpeedFpm);
+  drawHorizontalSituationIndicator(context, data.heading, data.radios);
+  drawPresentHeadingBox(context, data.heading.currentDeg);
   drawSelectedHeadingBox(context, data.heading.selectedDeg);
   drawSelectedCourseBox(
     context,
@@ -1246,7 +1354,7 @@ function drawBalanceBar(
   context: CanvasRenderingContext2D,
   deflection: number,
 ): void {
-  if (!balanceBarImage?.complete || balanceBarImage.naturalWidth === 0) {
+  if (!isCanvasImageReady(balanceBarImage)) {
     return;
   }
 
@@ -1262,6 +1370,587 @@ function drawBalanceBar(
     balanceBar.width,
     balanceBar.height,
   );
+}
+
+function drawHorizontalSituationIndicator(
+  context: CanvasRenderingContext2D,
+  heading: PfdDisplayData["heading"],
+  radios: PfdDisplayData["radios"],
+): void {
+  const centerX = hsi.x + hsi.width / 2;
+  const centerY = hsi.y + hsi.height / 2;
+  const courseRotationDeg = heading.desiredTrackDeg - heading.currentDeg;
+
+  drawRotatedImage(context, {
+    centerX,
+    centerY,
+    height: hsi.height,
+    image: hsiImage,
+    rotationDeg: -heading.currentDeg,
+    width: hsi.width,
+  });
+  drawRotatedImage(context, {
+    centerX,
+    centerY,
+    height: hsiDots.height,
+    image: hsiDotsImage,
+    rotationDeg: courseRotationDeg,
+    width: hsiDots.width,
+  });
+  drawHsiCoursePointer(context, {
+    centerX,
+    centerY,
+    radios,
+    rotationDeg: courseRotationDeg,
+  });
+  drawRotatedImage(context, {
+    centerX,
+    centerY,
+    height: hsiPlane.height,
+    image: hsiPlaneImage,
+    rotationDeg: 0,
+    width: hsiPlane.width,
+  });
+  drawHsiNavigationInfo(context, radios);
+  drawHsiOuterTicks(context, centerX, centerY);
+  drawHsiTurnRateIndicator(
+    context,
+    centerX,
+    centerY,
+    heading.turnRateDegPerSec,
+  );
+
+  drawPresentHeadingPointer(context, centerX);
+  drawHsiHeadingBug(context, centerX, centerY, heading);
+}
+
+function drawHsiNavigationInfo(
+  context: CanvasRenderingContext2D,
+  radios: PfdDisplayData["radios"],
+): void {
+  const sourceColor = getCdiSourceColor(radios.cdiSource);
+
+  context.save();
+  context.textAlign = "left";
+  context.textBaseline = "top";
+  context.font = `400 ${hsiNavSourceText.fontPx}px Inter, sans-serif`;
+  context.fillStyle = sourceColor;
+  context.fillText(
+    formatDisplayedCdiSource(radios),
+    hsiNavSourceText.x,
+    hsiNavSourceText.y,
+  );
+
+  if (radios.cdiSource === "GPS") {
+    context.fillStyle = "#ff4dff";
+    context.fillText(radios.navPhase, hsiNavPhaseText.x, hsiNavPhaseText.y);
+  }
+
+  context.restore();
+}
+
+function drawHsiTurnRateIndicator(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  turnRateDegPerSec: number,
+): void {
+  const geometry = getHsiTurnRateGeometry(centerY);
+  const halfStandardPredictionDeg =
+    (hsiTurnRateIndicator.standardRateDegPerSec / 2) *
+    hsiTurnRateIndicator.predictionSeconds;
+  const standardPredictionDeg =
+    hsiTurnRateIndicator.standardRateDegPerSec *
+    hsiTurnRateIndicator.predictionSeconds;
+  const maxPredictionDeg =
+    hsiTurnRateIndicator.maxArrowRateDegPerSec *
+    hsiTurnRateIndicator.predictionSeconds;
+
+  context.save();
+  drawHsiTurnRateBackground(
+    context,
+    centerX,
+    centerY,
+    geometry,
+    maxPredictionDeg,
+  );
+
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = hsiTurnRateIndicator.tickLineWidth;
+
+  [
+    -standardPredictionDeg,
+    -halfStandardPredictionDeg,
+    halfStandardPredictionDeg,
+    standardPredictionDeg,
+  ].forEach((angleDeg) => {
+    drawHsiTurnRateTick(context, centerX, centerY, angleDeg, geometry);
+  });
+
+  drawHsiTurnRateTrendVector(
+    context,
+    centerX,
+    centerY,
+    turnRateDegPerSec,
+    geometry.trendRadius,
+  );
+  context.restore();
+}
+
+function getHsiTurnRateGeometry(centerY: number): {
+  backgroundRadius: number;
+  tickInnerRadius: number;
+  tickOuterRadius: number;
+  trendRadius: number;
+} {
+  const tickOuterRadius = centerY - hsiTurnRateIndicator.topY;
+  const tickInnerRadius = tickOuterRadius - hsiTurnRateIndicator.height;
+  const backgroundRadius = tickInnerRadius + hsiTurnRateIndicator.height / 2;
+  const trendRadius = tickInnerRadius + hsiTurnRateIndicator.trendLineWidth / 2;
+
+  return { backgroundRadius, tickInnerRadius, tickOuterRadius, trendRadius };
+}
+
+function drawHsiTurnRateBackground(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  geometry: ReturnType<typeof getHsiTurnRateGeometry>,
+  maxPredictionDeg: number,
+): void {
+  context.save();
+  context.strokeStyle = hsiTurnRateIndicator.backgroundColor;
+  context.lineCap = "butt";
+  context.lineWidth = hsiTurnRateIndicator.height;
+  context.beginPath();
+  context.arc(
+    centerX,
+    centerY,
+    geometry.backgroundRadius,
+    degreesToRadians(-maxPredictionDeg - 90),
+    degreesToRadians(maxPredictionDeg - 90),
+  );
+  context.stroke();
+  context.restore();
+}
+
+function drawHsiTurnRateTick(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  angleDeg: number,
+  geometry: ReturnType<typeof getHsiTurnRateGeometry>,
+): void {
+  const inner = getHsiRelativePoint(
+    centerX,
+    centerY,
+    geometry.tickInnerRadius,
+    angleDeg,
+  );
+  const outer = getHsiRelativePoint(
+    centerX,
+    centerY,
+    geometry.tickOuterRadius,
+    angleDeg,
+  );
+
+  context.beginPath();
+  context.moveTo(inner.x, inner.y);
+  context.lineTo(outer.x, outer.y);
+  context.stroke();
+}
+
+function drawHsiTurnRateTrendVector(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  turnRateDegPerSec: number,
+  trendRadius: number,
+): void {
+  if (!Number.isFinite(turnRateDegPerSec) || turnRateDegPerSec === 0) {
+    return;
+  }
+
+  const sign = Math.sign(turnRateDegPerSec);
+  const absoluteRate = Math.abs(turnRateDegPerSec);
+  const cappedRate = Math.min(
+    absoluteRate,
+    hsiTurnRateIndicator.maxArrowRateDegPerSec,
+  );
+  const predictedHeadingDeltaDeg =
+    sign * cappedRate * hsiTurnRateIndicator.predictionSeconds;
+  const startRad = degreesToRadians(-90);
+  const endRad = degreesToRadians(predictedHeadingDeltaDeg - 90);
+  const showArrowHead =
+    absoluteRate > hsiTurnRateIndicator.maxArrowRateDegPerSec;
+
+  context.save();
+  context.strokeStyle = "#ff4dff";
+  context.fillStyle = "#ff4dff";
+  context.lineCap = "butt";
+  context.lineWidth = hsiTurnRateIndicator.trendLineWidth;
+  context.beginPath();
+  context.arc(centerX, centerY, trendRadius, startRad, endRad, sign < 0);
+  context.stroke();
+
+  if (showArrowHead) {
+    const endPoint = getHsiRelativePoint(
+      centerX,
+      centerY,
+      trendRadius,
+      predictedHeadingDeltaDeg,
+    );
+    const directionRad = degreesToRadians(
+      sign > 0 ? predictedHeadingDeltaDeg : predictedHeadingDeltaDeg + 180,
+    );
+
+    drawHsiTurnRateArrowHead(context, endPoint.x, endPoint.y, directionRad);
+  }
+
+  context.restore();
+}
+
+function drawHsiTurnRateArrowHead(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  directionRad: number,
+): void {
+  const backX =
+    x - Math.cos(directionRad) * hsiTurnRateIndicator.arrowHeadLength;
+  const backY =
+    y - Math.sin(directionRad) * hsiTurnRateIndicator.arrowHeadLength;
+  const normalRad = directionRad + Math.PI / 2;
+  const halfWidth = hsiTurnRateIndicator.arrowHeadWidth / 2;
+
+  context.beginPath();
+  context.moveTo(x, y);
+  context.lineTo(
+    backX + Math.cos(normalRad) * halfWidth,
+    backY + Math.sin(normalRad) * halfWidth,
+  );
+  context.lineTo(
+    backX - Math.cos(normalRad) * halfWidth,
+    backY - Math.sin(normalRad) * halfWidth,
+  );
+  context.closePath();
+  context.fill();
+}
+
+function drawHsiCoursePointer(
+  context: CanvasRenderingContext2D,
+  {
+    centerX,
+    centerY,
+    radios,
+    rotationDeg,
+  }: {
+    centerX: number;
+    centerY: number;
+    radios: PfdDisplayData["radios"];
+    rotationDeg: number;
+  },
+): void {
+  const color = getCdiSourceColor(radios.cdiSource);
+  const halfDeviationGap = hsiCoursePointer.deviationGap / 2;
+  const leadingLineEndY = -halfDeviationGap;
+  const trailingLineStartY = halfDeviationGap;
+  const arrowBaseY = leadingLineEndY - hsiCoursePointer.leadingLineLength;
+  const arrowTipY = arrowBaseY - hsiCoursePointer.arrowHeight;
+  const trailingLineEndY =
+    trailingLineStartY + hsiCoursePointer.trailingLineLength;
+  const lineOffsets = isDoubleCoursePointerSource(radios.cdiSource)
+    ? [-hsiCoursePointer.doubleLineOffset, hsiCoursePointer.doubleLineOffset]
+    : [0];
+
+  context.save();
+  context.translate(centerX, centerY);
+  context.rotate(degreesToRadians(rotationDeg));
+  context.strokeStyle = color;
+  context.fillStyle = color;
+  context.lineCap = "butt";
+  context.lineWidth = hsiCoursePointer.lineWidth;
+
+  drawHsiCoursePointerArrowHead(context, arrowTipY, arrowBaseY);
+
+  lineOffsets.forEach((offsetX) => {
+    context.beginPath();
+    context.moveTo(offsetX, arrowBaseY);
+    context.lineTo(offsetX, leadingLineEndY);
+    context.moveTo(offsetX, trailingLineStartY);
+    context.lineTo(offsetX, trailingLineEndY);
+    context.stroke();
+  });
+
+  drawHsiCourseDeviationLine(context, radios, lineOffsets);
+
+  if (radios.isActiveNavaidReceived) {
+    drawHsiCourseToFromArrow(context, radios.courseToFrom, {
+      leadingLineEndY,
+      trailingLineStartY,
+    });
+  }
+
+  context.restore();
+}
+
+function drawHsiCourseDeviationLine(
+  context: CanvasRenderingContext2D,
+  radios: PfdDisplayData["radios"],
+  lineOffsets: number[],
+): void {
+  const deviationX = getCourseDeviationPixels(radios.courseDeviation);
+  const halfLineLength = hsiCoursePointer.courseDeviationLineLength / 2;
+
+  lineOffsets.forEach((offsetX) => {
+    context.beginPath();
+    context.moveTo(deviationX + offsetX, -halfLineLength);
+    context.lineTo(deviationX + offsetX, halfLineLength);
+    context.stroke();
+  });
+}
+
+function drawHsiCoursePointerArrowHead(
+  context: CanvasRenderingContext2D,
+  tipY: number,
+  baseY: number,
+): void {
+  const halfArrowWidth = hsiCoursePointer.arrowWidth / 2;
+
+  context.beginPath();
+  context.moveTo(0, tipY);
+  context.lineTo(halfArrowWidth, baseY);
+  context.lineTo(-halfArrowWidth, baseY);
+  context.closePath();
+  context.fill();
+}
+
+function drawHsiCourseToFromArrow(
+  context: CanvasRenderingContext2D,
+  courseToFrom: CourseToFrom,
+  {
+    leadingLineEndY,
+    trailingLineStartY,
+  }: {
+    leadingLineEndY: number;
+    trailingLineStartY: number;
+  },
+): void {
+  const halfArrowWidth = hsiCoursePointer.toFromArrowWidth / 2;
+
+  context.beginPath();
+
+  if (courseToFrom === "TO") {
+    const baseY = leadingLineEndY;
+    const tipY = baseY - hsiCoursePointer.toFromArrowHeight;
+
+    context.moveTo(0, tipY);
+    context.lineTo(halfArrowWidth, baseY);
+    context.lineTo(-halfArrowWidth, baseY);
+  } else {
+    const baseY = trailingLineStartY;
+    const tipY = baseY + hsiCoursePointer.toFromArrowHeight;
+
+    context.moveTo(0, tipY);
+    context.lineTo(halfArrowWidth, baseY);
+    context.lineTo(-halfArrowWidth, baseY);
+  }
+
+  context.closePath();
+  context.fill();
+}
+
+function getCdiSourceColor(cdiSource: CdiSource): string {
+  return cdiSource === "GPS" ? "#ff4dff" : "#4be17b";
+}
+
+function getCourseDeviationPixels(courseDeviation: number): number {
+  if (!Number.isFinite(courseDeviation)) {
+    return 0;
+  }
+
+  const clampedDeviation = Math.max(-1, Math.min(1, courseDeviation));
+  const fullScalePixels =
+    hsiCourseDeviationScale.dotImageWidth / 2 -
+    hsiCourseDeviationScale.outerDotCenterInset;
+
+  return clampedDeviation * fullScalePixels;
+}
+
+function getHsiRelativePoint(
+  centerX: number,
+  centerY: number,
+  radius: number,
+  angleDeg: number,
+): { x: number; y: number } {
+  const angleRad = degreesToRadians(angleDeg - 90);
+
+  return {
+    x: centerX + Math.cos(angleRad) * radius,
+    y: centerY + Math.sin(angleRad) * radius,
+  };
+}
+
+function formatDisplayedCdiSource(radios: PfdDisplayData["radios"]): string {
+  switch (radios.cdiSource) {
+    case "GPS":
+      return "GPS";
+    case "NAV1":
+      return `${radios.nav1SignalType}1`;
+    case "NAV2":
+      return `${radios.nav2SignalType}2`;
+  }
+}
+
+function isDoubleCoursePointerSource(cdiSource: CdiSource): boolean {
+  return cdiSource === "NAV2";
+}
+
+function drawPresentHeadingBox(
+  context: CanvasRenderingContext2D,
+  currentHeadingDeg: number,
+): void {
+  const centerX = presentHeadingBox.x + presentHeadingBox.width / 2;
+  const centerY = presentHeadingBox.y + presentHeadingBox.height / 2;
+
+  context.save();
+  context.fillStyle = "#000000";
+  context.fillRect(
+    presentHeadingBox.x,
+    presentHeadingBox.y,
+    presentHeadingBox.width,
+    presentHeadingBox.height,
+  );
+
+  context.fillStyle = "#ffffff";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.font = `800 ${presentHeadingBox.fontPx}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
+  context.fillText(
+    `${formatHeadingValue(currentHeadingDeg)}º`,
+    centerX,
+    centerY,
+    presentHeadingBox.width - 4,
+  );
+  context.restore();
+}
+
+function drawHsiOuterTicks(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+): void {
+  const innerRadius = hsi.width / 2;
+  const outerRadius = innerRadius + hsiOuterTicks.length;
+
+  context.save();
+  context.strokeStyle = "#ffffff";
+  context.lineCap = "butt";
+  context.lineWidth = hsiOuterTicks.lineWidth;
+
+  hsiOuterTicks.anglesDeg.forEach((angleDeg) => {
+    const angleRad = degreesToRadians(angleDeg - 90);
+    const cos = Math.cos(angleRad);
+    const sin = Math.sin(angleRad);
+
+    context.beginPath();
+    context.moveTo(centerX + cos * innerRadius, centerY + sin * innerRadius);
+    context.lineTo(centerX + cos * outerRadius, centerY + sin * outerRadius);
+    context.stroke();
+  });
+
+  context.restore();
+}
+
+function drawPresentHeadingPointer(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+): void {
+  const boxBottomY = presentHeadingBox.y + presentHeadingBox.height;
+  const halfWidth = presentHeadingPointer.width / 2;
+  const pointerTipY = hsi.y + presentHeadingPointer.hsiInset;
+
+  context.save();
+  context.fillStyle = "#ffffff";
+  context.beginPath();
+  context.moveTo(centerX - halfWidth, boxBottomY);
+  context.lineTo(centerX + halfWidth, boxBottomY);
+  context.lineTo(centerX, pointerTipY);
+  context.closePath();
+  context.fill();
+  context.restore();
+}
+
+function drawHsiHeadingBug(
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  heading: PfdDisplayData["heading"],
+): void {
+  if (
+    !Number.isFinite(heading.currentDeg) ||
+    !Number.isFinite(heading.selectedDeg)
+  ) {
+    return;
+  }
+
+  const rotationDeg = heading.selectedDeg - heading.currentDeg;
+  const radius = hsi.width / 2;
+  const halfWidth = hsiHeadingBug.width / 2;
+  const halfCutoutWidth = hsiHeadingBug.cutoutWidth / 2;
+  const outerY = 0;
+  const innerY = hsiHeadingBug.height;
+  const cutoutApexY = outerY + hsiHeadingBug.cutoutHeight;
+
+  context.save();
+  context.translate(centerX, centerY);
+  context.rotate(degreesToRadians(rotationDeg));
+  context.translate(0, -radius);
+
+  context.fillStyle = altitudeBug.color;
+  context.strokeStyle = altitudeBug.color;
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(-halfWidth, outerY);
+  context.lineTo(-halfCutoutWidth, outerY);
+  context.lineTo(0, cutoutApexY);
+  context.lineTo(halfCutoutWidth, outerY);
+  context.lineTo(halfWidth, outerY);
+  context.lineTo(halfWidth, innerY);
+  context.lineTo(-halfWidth, innerY);
+  context.closePath();
+  context.fill();
+  context.stroke();
+  context.restore();
+}
+
+function drawRotatedImage(
+  context: CanvasRenderingContext2D,
+  {
+    centerX,
+    centerY,
+    height,
+    image,
+    rotationDeg,
+    width,
+  }: {
+    centerX: number;
+    centerY: number;
+    height: number;
+    image: HTMLImageElement | undefined;
+    rotationDeg: number;
+    width: number;
+  },
+): void {
+  if (!isCanvasImageReady(image)) {
+    return;
+  }
+
+  context.save();
+  context.translate(centerX, centerY);
+  context.rotate(degreesToRadians(rotationDeg));
+  context.drawImage(image, -width / 2, -height / 2, width, height);
+  context.restore();
 }
 
 function drawAirspeedTape(
@@ -1594,7 +2283,9 @@ function drawSelectedHeadingBox(
   context.font = `800 ${selectedHeadingBox.valueFontPx}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
   context.fillText(
     `${formatHeadingValue(selectedHeadingDeg)}º`,
-    selectedHeadingBox.x + selectedHeadingBox.width - selectedHeadingBox.textInset,
+    selectedHeadingBox.x +
+      selectedHeadingBox.width -
+      selectedHeadingBox.textInset,
     centerY,
   );
   context.restore();
@@ -2174,7 +2865,7 @@ function drawRollScale(
   context: CanvasRenderingContext2D,
   levelHorizonLineY: number,
 ): void {
-  if (!rollScaleImage?.complete || rollScaleImage.naturalWidth === 0) {
+  if (!isCanvasImageReady(rollScaleImage)) {
     return;
   }
 
@@ -2283,6 +2974,16 @@ function createCanvasImage(src: string): HTMLImageElement | undefined {
   image.src = src;
 
   return image;
+}
+
+function isCanvasImageReady(
+  image: HTMLImageElement | undefined,
+): image is HTMLImageElement {
+  return Boolean(image?.complete && image.naturalWidth > 0);
+}
+
+function degreesToRadians(degrees: number): number {
+  return (degrees * Math.PI) / 180;
 }
 
 function drawXPDRTimeInfo(

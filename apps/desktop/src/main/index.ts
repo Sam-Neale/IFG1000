@@ -20,6 +20,7 @@ let latestSnapshot: AvionicsSnapshot = createInitialAvionicsSnapshot();
 const connectClient = createIfConnectClient();
 const supervisor = new ComputerSupervisor();
 const rendererContexts = new Map<number, RendererContext>();
+const preloadScriptPath = join(__dirname, "../preload/index.mjs");
 
 function publish(event: AvionicsEvent): void {
   for (const window of BrowserWindow.getAllWindows()) {
@@ -47,7 +48,8 @@ function createGduWindow(displayRole: DisplayRole): BrowserWindow {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
-      preload: join(__dirname, "../preload/index.mjs"),
+      preload: preloadScriptPath,
+      sandbox: false,
     },
   });
   window.setAspectRatio(1452 / 948);
@@ -79,7 +81,8 @@ function createGmaWindow(): BrowserWindow {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
-      preload: join(__dirname, "../preload/index.mjs"),
+      preload: preloadScriptPath,
+      sandbox: false,
     },
   });
 
@@ -96,6 +99,13 @@ function createGmaWindow(): BrowserWindow {
 
 function registerWindowContext(window: BrowserWindow, context: RendererContext): void {
   rendererContexts.set(window.id, context);
+
+  window.webContents.on("preload-error", (_event, preloadPath, error) => {
+    console.error(`Preload failed for ${context.title}`, {
+      error,
+      preloadPath,
+    });
+  });
 
   window.on("closed", () => {
     rendererContexts.delete(window.id);

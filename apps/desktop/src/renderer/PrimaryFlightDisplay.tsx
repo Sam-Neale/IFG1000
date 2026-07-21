@@ -5,7 +5,15 @@ import {
   useState,
   type CSSProperties,
   type ReactElement,
+  type WheelEvent as ReactWheelEvent,
 } from "react";
+import type {
+  GDC74AData,
+  GIA63WData,
+  GRS77Data,
+  PanelInputDirection,
+  PanelInputEvent,
+} from "@ifg1000/shared";
 import attitudeIndicatorSrc from "./assets/AI.svg";
 import balanceBarSrc from "./assets/Balance Bar.svg";
 import cdiDotsSrc from "./assets/CDI Dots.svg";
@@ -17,8 +25,19 @@ import rollScaleSrc from "./assets/Roll Scale.svg";
 interface PrimaryFlightDisplayProps {
   displayRole: "pfd" | "mfd";
   frameSrc: string;
-  onControlInput?: (control: string) => void;
+  gdc74aData: GDC74AData;
+  gia63wData: GIA63WData;
+  grs77Data: GRS77Data;
+  onControlInput?: (input: PanelControlInput) => void;
 }
+
+type PanelControlInput =
+  | string
+  | {
+      action?: PanelInputEvent["action"];
+      control: string;
+      direction?: PanelInputDirection;
+    };
 
 const frameWidth = 1452;
 const frameHeight = 948;
@@ -215,6 +234,11 @@ const verticalSpeedPointer = {
   triangleHeight: 22,
   triangleWidth: 22,
 } as const;
+const failedDataStyle = {
+  fill: "rgba(78, 24, 24, 0.6)",
+  stroke: "#d7302a",
+  text: "#f4d548",
+} as const;
 const selectedHeadingBox = {
   height: 27,
   labelFontPx: 13,
@@ -247,7 +271,28 @@ const hsiPlaneImage = createCanvasImage(hsiPlaneSrc);
 
 type CdiSource = "GPS" | "NAV1" | "NAV2";
 type CourseToFrom = "TO" | "FROM";
-type NavSignalType = "VOR" | "LOC";
+type BarometerDisplayUnit = "hPa" | "IN";
+type BearingPointerMode = "OFF" | "NAV1" | "NAV2" | "GPS";
+type HsiFormat = "360 HSI" | "ARC HSI";
+type InsetDeclutterLevel = 0 | 1 | 2 | 3;
+type InsetLayerKey =
+  | "weatherLegend"
+  | "traffic"
+  | "topo"
+  | "terrain"
+  | "stormscope"
+  | "nexrad"
+  | "xmLightning"
+  | "metar";
+type SyntheticVisionKey =
+  | "pathway"
+  | "terrain"
+  | "horizonHeading"
+  | "airportSigns";
+type TransponderCodeDigit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
+type TransponderMode = GIA63WData["XPDR"]["transponderMode"];
+type WindDisplayMode = "OPTN1" | "OPTN2" | "OPTN3" | "OFF";
+type NavSignalType = "VOR" | "LOC" | "GS" | "ILS" | "OFF";
 type NavPhase =
   | "DPRT"
   | "TERM"
@@ -270,7 +315,8 @@ interface PfdDisplayData {
   altitude: {
     altitudeFt: number;
     barometerInHg: number;
-    barometerUnit: "hPa" | "IN";
+    barometerUnit: BarometerDisplayUnit;
+    showMetricAltitude: boolean;
     selectedAltitudeFt: number;
     verticalSpeedFpm: number;
   };
@@ -284,6 +330,8 @@ interface PfdDisplayData {
     oatC: number;
     systemTime: Date;
     transponderCode: string;
+    transponderIdentActive: boolean;
+    transponderIdentUntilMs: number | null;
     transponderMode: string;
   };
   heading: {
@@ -291,6 +339,9 @@ interface PfdDisplayData {
     desiredTrackDeg: number;
     selectedDeg: number;
     turnRateDegPerSec: number;
+  };
+  validity: {
+    ifDataValid: boolean;
   };
   radios: {
     bearingDeg: number;
@@ -316,63 +367,47 @@ interface PfdDisplayData {
   };
 }
 
-const dummyPfdData: PfdDisplayData = {
-  airspeed: {
-    bugKt: 210,
-    indicatedKt: 115,
-    trueAirspeedKt: 315,
-    trendKt: 4,
-  },
-  altitude: {
-    altitudeFt: 5000,
-    barometerInHg: 29.92,
-    barometerUnit: "hPa",
-    selectedAltitudeFt: 5200,
-    verticalSpeedFpm: 0,
-  },
-  attitude: {
-    pitchDeg: 0,
-    rollDeg: 0,
-    slipSkidDeflection: 0,
-  },
-  environment: {
-    isaC: -6,
-    oatC: 7,
-    get systemTime() {
-      return new Date();
-    },
-    transponderCode: "1200",
-    transponderMode: "ALT",
-  },
-  heading: {
-    currentDeg: 326,
-    desiredTrackDeg: 105,
-    selectedDeg: 15,
-    turnRateDegPerSec: 2,
-  },
-  radios: {
-    bearingDeg: 105,
-    com1Active: "118.100",
-    com1Standby: "136.275",
-    com2Active: "118.300",
-    com2Standby: "118.400",
-    comSource: 1,
-    cdiSource: "GPS",
-    courseDeviation: 0,
-    courseToFrom: "TO",
-    distanceNm: 51.5,
-    isActiveNavaidReceived: true,
-    nav1Active: "108.00",
-    nav1SignalType: "VOR",
-    nav1Standby: "117.95",
-    nav2Active: "108.00",
-    nav2SignalType: "VOR",
-    nav2Standby: "117.95",
-    navPhase: "ENR",
-    navSource: 1,
-    waypoint: "KORD",
-  },
-};
+interface PfdSoftKeyState {
+  alertsVisible: boolean;
+  barometerStandard: boolean;
+  barometerUnit: BarometerDisplayUnit;
+  bearing1: BearingPointerMode;
+  bearing2: BearingPointerMode;
+  dmeVisible: boolean;
+  hsiFormat: HsiFormat;
+  inset: {
+    declutterLevel: InsetDeclutterLevel;
+    metar: boolean;
+    nexrad: boolean;
+    stormscope: boolean;
+    terrain: boolean;
+    topo: boolean;
+    traffic: boolean;
+    visible: boolean;
+    weatherLegend: boolean;
+    xmLightning: boolean;
+  };
+  nearestVisible: boolean;
+  obsMode: boolean;
+  showMetricAltitude: boolean;
+  syntheticVision: {
+    airportSigns: boolean;
+    horizonHeading: boolean;
+    pathway: boolean;
+    terrain: boolean;
+  };
+  timerRefVisible: boolean;
+  transponderCode: string;
+  transponderCodeEntry: string;
+  transponderIdentUntilMs: number | null;
+  transponderMode: TransponderMode;
+  windMode: WindDisplayMode;
+}
+
+const unresolvedNavigationFields = {
+  distanceNm: 0,
+  waypoint: "",
+} as const;
 
 interface HitZone {
   label: string;
@@ -695,15 +730,24 @@ const hitZones: HitZone[] = [
 type SoftKeyPosition = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 type SoftKey = {
+  isActive?: (state: PfdSoftKeyState) => boolean;
   position: SoftKeyPosition;
   label: string;
-} & ({ children: SoftKey[] } | { pressed: (actions: SoftKeyActions) => void });
+} & (
+  | {
+      children: SoftKey[];
+      opened?: (actions: SoftKeyActions) => void;
+    }
+  | { pressed: (actions: SoftKeyActions) => void }
+);
 
 interface SoftKeyActions {
   activate: (position: SoftKeyPosition) => void;
   back: () => void;
-  cycleCdiSource: () => void;
   home: () => void;
+  setSoftKeyState: (
+    updater: (state: PfdSoftKeyState) => PfdSoftKeyState,
+  ) => void;
 }
 
 interface CanvasTextItem {
@@ -716,55 +760,329 @@ const softKeyPositions: SoftKeyPosition[] = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
 ];
 
+function setInsetVisible(visible: boolean): (actions: SoftKeyActions) => void {
+  return ({ setSoftKeyState }) => {
+    setSoftKeyState((state) => ({
+      ...state,
+      inset: {
+        ...state.inset,
+        visible,
+      },
+    }));
+  };
+}
+
+function closeInset({ back, setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    inset: {
+      ...state.inset,
+      visible: false,
+    },
+  }));
+  back();
+}
+
+function cycleInsetDeclutter({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    inset: {
+      ...state.inset,
+      declutterLevel: getNextInsetDeclutterLevel(state.inset.declutterLevel),
+      visible: true,
+    },
+  }));
+}
+
+function toggleInsetLayer(
+  layer: InsetLayerKey,
+): (actions: SoftKeyActions) => void {
+  return ({ setSoftKeyState }) => {
+    setSoftKeyState((state) => ({
+      ...state,
+      inset: {
+        ...state.inset,
+        [layer]: !state.inset[layer],
+        visible: true,
+      },
+    }));
+  };
+}
+
+function toggleSyntheticVision(
+  setting: SyntheticVisionKey,
+): (actions: SoftKeyActions) => void {
+  return ({ setSoftKeyState }) => {
+    setSoftKeyState((state) => ({
+      ...state,
+      syntheticVision: {
+        ...state.syntheticVision,
+        [setting]: !state.syntheticVision[setting],
+      },
+    }));
+  };
+}
+
+function selectWindMode(
+  mode: WindDisplayMode,
+): (actions: SoftKeyActions) => void {
+  return ({ setSoftKeyState }) => {
+    setSoftKeyState((state) => ({
+      ...state,
+      windMode: mode,
+    }));
+  };
+}
+
+function selectHsiFormat(format: HsiFormat): (actions: SoftKeyActions) => void {
+  return ({ setSoftKeyState }) => {
+    setSoftKeyState((state) => ({
+      ...state,
+      hsiFormat: format,
+    }));
+  };
+}
+
+function toggleDme({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    dmeVisible: !state.dmeVisible,
+  }));
+}
+
+function cycleBearing1({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    bearing1: cycleBearingPointerMode(state.bearing1, "NAV1"),
+  }));
+}
+
+function cycleBearing2({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    bearing2: cycleBearingPointerMode(state.bearing2, "NAV2"),
+  }));
+}
+
+function toggleMetricAltitude({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    showMetricAltitude: !state.showMetricAltitude,
+  }));
+}
+
+function selectBarometerUnit(
+  unit: BarometerDisplayUnit,
+): (actions: SoftKeyActions) => void {
+  return ({ setSoftKeyState }) => {
+    setSoftKeyState((state) => ({
+      ...state,
+      barometerUnit: unit,
+    }));
+  };
+}
+
+function setStandardBarometer({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    barometerStandard: !state.barometerStandard,
+  }));
+}
+
+function resetPfdDefaults({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    barometerStandard: false,
+    barometerUnit: "IN",
+    bearing1: "OFF",
+    bearing2: "OFF",
+    dmeVisible: false,
+    hsiFormat: "360 HSI",
+    showMetricAltitude: false,
+    syntheticVision: {
+      airportSigns: false,
+      horizonHeading: false,
+      pathway: false,
+      terrain: false,
+    },
+    windMode: "OFF",
+  }));
+}
+
+function toggleObsMode({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    obsMode: !state.obsMode,
+  }));
+}
+
+function setTransponderMode(
+  mode: TransponderMode,
+): (actions: SoftKeyActions) => void {
+  return ({ setSoftKeyState }) => {
+    setSoftKeyState((state) => ({
+      ...state,
+      transponderMode: mode,
+    }));
+  };
+}
+
+function setVfrTransponderCode({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    transponderCode: "1200",
+    transponderCodeEntry: "",
+  }));
+}
+
+function startTransponderIdent({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    transponderIdentUntilMs: Date.now() + 18_000,
+  }));
+}
+
+function appendTransponderCodeDigit(
+  digit: TransponderCodeDigit,
+): (actions: SoftKeyActions) => void {
+  return ({ setSoftKeyState }) => {
+    setSoftKeyState((state) => {
+      const nextEntry = `${state.transponderCodeEntry}${digit}`.slice(0, 4);
+      const isComplete = nextEntry.length === 4;
+
+      return {
+        ...state,
+        transponderCode: isComplete ? nextEntry : state.transponderCode,
+        transponderCodeEntry: isComplete ? "" : nextEntry,
+      };
+    });
+  };
+}
+
+function deleteTransponderCodeDigit({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    transponderCodeEntry: state.transponderCodeEntry.slice(0, -1),
+  }));
+}
+
+function clearTransponderCodeEntry({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    transponderCodeEntry: "",
+  }));
+}
+
+function toggleTimerRef({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    timerRefVisible: !state.timerRefVisible,
+  }));
+}
+
+function toggleNearest({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    nearestVisible: !state.nearestVisible,
+  }));
+}
+
+function toggleAlerts({ setSoftKeyState }: SoftKeyActions): void {
+  setSoftKeyState((state) => ({
+    ...state,
+    alertsVisible: !state.alertsVisible,
+  }));
+}
+
+function noopSoftKey(): void {
+  // The owning GIA handles this semantic key input.
+}
+
+function isPfdConfigActive(state: PfdSoftKeyState): boolean {
+  return (
+    hasSyntheticVisionEnabled(state) ||
+    state.windMode !== "OFF" ||
+    state.dmeVisible ||
+    state.bearing1 !== "OFF" ||
+    state.bearing2 !== "OFF" ||
+    state.hsiFormat !== "360 HSI" ||
+    state.showMetricAltitude ||
+    state.barometerUnit !== "IN" ||
+    state.barometerStandard
+  );
+}
+
+function hasSyntheticVisionEnabled(state: PfdSoftKeyState): boolean {
+  return Object.values(state.syntheticVision).some(Boolean);
+}
+
+function isTransponderIdentActive(state: PfdSoftKeyState): boolean {
+  return (
+    state.transponderIdentUntilMs !== null &&
+    Date.now() < state.transponderIdentUntilMs
+  );
+}
+
 const insetSoftKeys: SoftKey[] = [
   {
     position: 1,
     label: "OFF",
-    pressed: ({ back }) => {
-      console.log("OFF pressed");
-      back();
-    },
+    isActive: (state) => !state.inset.visible,
+    pressed: closeInset,
   },
-  { position: 2, label: "DCLTR", pressed: () => console.log("DCLTR cycled") },
+  {
+    position: 2,
+    label: "DCLTR",
+    isActive: (state) => state.inset.visible && state.inset.declutterLevel > 0,
+    pressed: cycleInsetDeclutter,
+  },
   {
     position: 3,
     label: "WX LGND",
-    pressed: () => console.log("WX LGND pressed"),
+    isActive: (state) => state.inset.weatherLegend,
+    pressed: toggleInsetLayer("weatherLegend"),
   },
   {
     position: 4,
     label: "TRAFFIC",
-    pressed: () => console.log("TRAFFIC cycled"),
+    isActive: (state) => state.inset.traffic,
+    pressed: toggleInsetLayer("traffic"),
   },
   {
     position: 5,
     label: "TOPO",
-    pressed: () => console.log("TOPO pressed"),
+    isActive: (state) => state.inset.topo,
+    pressed: toggleInsetLayer("topo"),
   },
   {
     position: 6,
     label: "TERRAIN",
-    pressed: () => console.log("TERRAIN pressed"),
+    isActive: (state) => state.inset.terrain,
+    pressed: toggleInsetLayer("terrain"),
   },
   {
     position: 7,
     label: "STRMSCP",
-    pressed: () => console.log("STRMSCP pressed"),
+    isActive: (state) => state.inset.stormscope,
+    pressed: toggleInsetLayer("stormscope"),
   },
   {
     position: 8,
     label: "NEXRAD",
-    pressed: () => console.log("NEXRAD pressed"),
+    isActive: (state) => state.inset.nexrad,
+    pressed: toggleInsetLayer("nexrad"),
   },
   {
     position: 9,
     label: "XM LTNG",
-    pressed: () => console.log("XM LTNG pressed"),
+    isActive: (state) => state.inset.xmLightning,
+    pressed: toggleInsetLayer("xmLightning"),
   },
   {
     position: 10,
     label: "METAR",
-    pressed: () => console.log("METAR pressed"),
+    isActive: (state) => state.inset.metar,
+    pressed: toggleInsetLayer("metar"),
   },
   {
     position: 11,
@@ -774,7 +1092,8 @@ const insetSoftKeys: SoftKey[] = [
   {
     position: 12,
     label: "ALERTS",
-    pressed: () => console.log("ALERTS pressed"),
+    isActive: (state) => state.alertsVisible,
+    pressed: toggleAlerts,
   },
 ];
 
@@ -782,30 +1101,26 @@ const syntheticVisionSoftKeys: SoftKey[] = [
   {
     position: 1,
     label: "PATHWAY",
-    pressed: ({ back }) => {
-      console.log("PATHWAY pressed");
-    },
+    isActive: (state) => state.syntheticVision.pathway,
+    pressed: toggleSyntheticVision("pathway"),
   },
   {
     position: 2,
     label: "SYN TERR",
-    pressed: ({ back }) => {
-      console.log("SYN TERR pressed");
-    },
+    isActive: (state) => state.syntheticVision.terrain,
+    pressed: toggleSyntheticVision("terrain"),
   },
   {
     position: 3,
     label: "HRZN HDG",
-    pressed: ({ back }) => {
-      console.log("HRZN HDG pressed");
-    },
+    isActive: (state) => state.syntheticVision.horizonHeading,
+    pressed: toggleSyntheticVision("horizonHeading"),
   },
   {
     position: 4,
     label: "APTSIGNS",
-    pressed: ({ back }) => {
-      console.log("APTSIGNS pressed");
-    },
+    isActive: (state) => state.syntheticVision.airportSigns,
+    pressed: toggleSyntheticVision("airportSigns"),
   },
   {
     position: 11,
@@ -815,7 +1130,8 @@ const syntheticVisionSoftKeys: SoftKey[] = [
   {
     position: 12,
     label: "ALERTS",
-    pressed: () => console.log("ALERTS pressed"),
+    isActive: (state) => state.alertsVisible,
+    pressed: toggleAlerts,
   },
 ];
 
@@ -823,30 +1139,26 @@ const windDisplaySoftKeys: SoftKey[] = [
   {
     position: 3,
     label: "OPTN1",
-    pressed: ({ back }) => {
-      console.log("OPTN1 pressed");
-    },
+    isActive: (state) => state.windMode === "OPTN1",
+    pressed: selectWindMode("OPTN1"),
   },
   {
     position: 4,
     label: "OPTN2",
-    pressed: ({ back }) => {
-      console.log("OPTN2 pressed");
-    },
+    isActive: (state) => state.windMode === "OPTN2",
+    pressed: selectWindMode("OPTN2"),
   },
   {
     position: 5,
     label: "OPTN3",
-    pressed: ({ back }) => {
-      console.log("OPTN3 pressed");
-    },
+    isActive: (state) => state.windMode === "OPTN3",
+    pressed: selectWindMode("OPTN3"),
   },
   {
     position: 6,
     label: "OFF",
-    pressed: ({ back }) => {
-      console.log("OFF pressed");
-    },
+    isActive: (state) => state.windMode === "OFF",
+    pressed: selectWindMode("OFF"),
   },
   {
     position: 11,
@@ -856,7 +1168,8 @@ const windDisplaySoftKeys: SoftKey[] = [
   {
     position: 12,
     label: "ALERTS",
-    pressed: () => console.log("ALERTS pressed"),
+    isActive: (state) => state.alertsVisible,
+    pressed: toggleAlerts,
   },
 ];
 
@@ -864,18 +1177,21 @@ const HSIFormatSoftKeys: SoftKey[] = [
   {
     position: 6,
     label: "360 HSI",
-    pressed: () => console.log("360 HSI pressed"),
+    isActive: (state) => state.hsiFormat === "360 HSI",
+    pressed: selectHsiFormat("360 HSI"),
   },
   {
     position: 7,
     label: "ARC HSI",
-    pressed: () => console.log("ARC HSI pressed"),
+    isActive: (state) => state.hsiFormat === "ARC HSI",
+    pressed: selectHsiFormat("ARC HSI"),
   },
   { position: 11, label: "BACK", pressed: ({ back }) => back() },
   {
     position: 12,
     label: "ALERTS",
-    pressed: () => console.log("ALERTS pressed"),
+    isActive: (state) => state.alertsVisible,
+    pressed: toggleAlerts,
   },
 ];
 
@@ -883,15 +1199,27 @@ const altitudeUnitsSoftKeys: SoftKey[] = [
   {
     position: 6,
     label: "METERS",
-    pressed: () => console.log("METERS pressed"),
+    isActive: (state) => state.showMetricAltitude,
+    pressed: toggleMetricAltitude,
   },
-  { position: 8, label: "IN", pressed: () => console.log("IN pressed") },
-  { position: 9, label: "HPA", pressed: () => console.log("HPA pressed") },
+  {
+    position: 8,
+    label: "IN",
+    isActive: (state) => state.barometerUnit === "IN",
+    pressed: selectBarometerUnit("IN"),
+  },
+  {
+    position: 9,
+    label: "HPA",
+    isActive: (state) => state.barometerUnit === "hPa",
+    pressed: selectBarometerUnit("hPa"),
+  },
   { position: 11, label: "BACK", pressed: ({ back }) => back() },
   {
     position: 12,
     label: "ALERTS",
-    pressed: () => console.log("ALERTS pressed"),
+    isActive: (state) => state.alertsVisible,
+    pressed: toggleAlerts,
   },
 ];
 
@@ -899,56 +1227,93 @@ const PFDConfigSoftKeys: SoftKey[] = [
   {
     position: 1,
     label: "SYN VIS",
+    isActive: hasSyntheticVisionEnabled,
     children: syntheticVisionSoftKeys,
   },
   {
     position: 2,
     label: "DFLTS",
-    pressed: () => console.log("DFLTS pressed"),
+    pressed: resetPfdDefaults,
   },
   {
     position: 3,
     label: "WIND",
+    isActive: (state) => state.windMode !== "OFF",
     children: windDisplaySoftKeys,
   },
   {
     position: 4,
     label: "DME",
-    pressed: () => console.log("DME pressed"),
+    isActive: (state) => state.dmeVisible,
+    pressed: toggleDme,
   },
-  { position: 5, label: "BRG1", pressed: () => console.log("BRG1 cycled") },
-  { position: 6, label: "HSI FRMT", children: HSIFormatSoftKeys },
-  { position: 7, label: "BRG2", pressed: () => console.log("BRG2 cycled") },
-  { position: 9, label: "ALT UNIT", children: altitudeUnitsSoftKeys },
+  {
+    position: 5,
+    label: "BRG1",
+    isActive: (state) => state.bearing1 !== "OFF",
+    pressed: cycleBearing1,
+  },
+  {
+    position: 6,
+    label: "HSI FRMT",
+    isActive: (state) => state.hsiFormat !== "360 HSI",
+    children: HSIFormatSoftKeys,
+  },
+  {
+    position: 7,
+    label: "BRG2",
+    isActive: (state) => state.bearing2 !== "OFF",
+    pressed: cycleBearing2,
+  },
+  {
+    position: 9,
+    label: "ALT UNIT",
+    isActive: (state) =>
+      state.showMetricAltitude || state.barometerUnit !== "IN",
+    children: altitudeUnitsSoftKeys,
+  },
   {
     position: 10,
     label: "STD BARO",
-    pressed: () => console.log("STD BARO pressed"),
+    isActive: (state) => state.barometerStandard,
+    pressed: setStandardBarometer,
   },
   { position: 11, label: "BACK", pressed: ({ back }) => back() },
   {
     position: 12,
     label: "ALERTS",
-    pressed: () => console.log("ALERTS pressed"),
+    isActive: (state) => state.alertsVisible,
+    pressed: toggleAlerts,
   },
 ];
 
 const XPDRCodeSoftKeys: SoftKey[] = [
-  { position: 1, label: "0", pressed: () => console.log("0 pressed") },
-  { position: 2, label: "1", pressed: () => console.log("1 pressed") },
-  { position: 3, label: "2", pressed: () => console.log("2 pressed") },
-  { position: 4, label: "3", pressed: () => console.log("3 pressed") },
-  { position: 5, label: "4", pressed: () => console.log("4 pressed") },
-  { position: 6, label: "5", pressed: () => console.log("5 pressed") },
-  { position: 7, label: "6", pressed: () => console.log("6 pressed") },
-  { position: 8, label: "7", pressed: () => console.log("7 pressed") },
-  { position: 9, label: "IDENT", pressed: () => console.log("IDENT pressed") },
-  { position: 10, label: "BKSP", pressed: () => console.log("BKSP pressed") },
+  { position: 1, label: "0", pressed: appendTransponderCodeDigit("0") },
+  { position: 2, label: "1", pressed: appendTransponderCodeDigit("1") },
+  { position: 3, label: "2", pressed: appendTransponderCodeDigit("2") },
+  { position: 4, label: "3", pressed: appendTransponderCodeDigit("3") },
+  { position: 5, label: "4", pressed: appendTransponderCodeDigit("4") },
+  { position: 6, label: "5", pressed: appendTransponderCodeDigit("5") },
+  { position: 7, label: "6", pressed: appendTransponderCodeDigit("6") },
+  { position: 8, label: "7", pressed: appendTransponderCodeDigit("7") },
+  {
+    position: 9,
+    label: "IDENT",
+    isActive: isTransponderIdentActive,
+    pressed: startTransponderIdent,
+  },
+  {
+    position: 10,
+    label: "BKSP",
+    isActive: (state) => state.transponderCodeEntry.length > 0,
+    pressed: deleteTransponderCodeDigit,
+  },
   { position: 11, label: "BACK", pressed: ({ back }) => back() },
   {
     position: 12,
     label: "ALERTS",
-    pressed: () => console.log("ALERTS pressed"),
+    isActive: (state) => state.alertsVisible,
+    pressed: toggleAlerts,
   },
 ];
 
@@ -956,58 +1321,130 @@ const XPDRSoftKeys: SoftKey[] = [
   {
     position: 3,
     label: "STBY",
-    pressed: () => console.log("STBY pressed"),
+    isActive: (state) => state.transponderMode === "STBY",
+    pressed: setTransponderMode("STBY"),
   },
-  { position: 4, label: "ON", pressed: () => console.log("ON pressed") },
-  { position: 5, label: "ALT", pressed: () => console.log("ALT pressed") },
-  { position: 6, label: "GND", pressed: () => console.log("TST pressed") },
-  { position: 7, label: "VFR", pressed: () => console.log("VFR pressed") },
-  { position: 8, label: "CODE", children: XPDRCodeSoftKeys },
-  { position: 9, label: "IDENT", pressed: () => console.log("IDENT pressed") },
+  {
+    position: 4,
+    label: "ON",
+    isActive: (state) => state.transponderMode === "ON",
+    pressed: setTransponderMode("ON"),
+  },
+  {
+    position: 5,
+    label: "ALT",
+    isActive: (state) => state.transponderMode === "ALT",
+    pressed: setTransponderMode("ALT"),
+  },
+  {
+    position: 6,
+    label: "GND",
+    isActive: (state) => state.transponderMode === "GND",
+    pressed: setTransponderMode("GND"),
+  },
+  { position: 7, label: "VFR", pressed: setVfrTransponderCode },
+  {
+    position: 8,
+    label: "CODE",
+    isActive: (state) => state.transponderCodeEntry.length > 0,
+    opened: clearTransponderCodeEntry,
+    children: XPDRCodeSoftKeys,
+  },
+  {
+    position: 9,
+    label: "IDENT",
+    isActive: isTransponderIdentActive,
+    pressed: startTransponderIdent,
+  },
   { position: 11, label: "BACK", pressed: ({ back }) => back() },
   {
     position: 12,
     label: "ALERTS",
-    pressed: () => console.log("ALERTS pressed"),
+    isActive: (state) => state.alertsVisible,
+    pressed: toggleAlerts,
   },
 ];
 
 const topLevelSoftKeys: SoftKey[] = [
-  { position: 2, label: "INSET", children: insetSoftKeys },
-  { position: 4, label: "PFD", children: PFDConfigSoftKeys },
-  { position: 5, label: "OBS", pressed: () => console.log("OBS pressed") },
+  {
+    position: 2,
+    label: "INSET",
+    isActive: (state) => state.inset.visible,
+    opened: setInsetVisible(true),
+    children: insetSoftKeys,
+  },
+  {
+    position: 4,
+    label: "PFD",
+    isActive: isPfdConfigActive,
+    children: PFDConfigSoftKeys,
+  },
+  {
+    position: 5,
+    label: "OBS",
+    isActive: (state) => state.obsMode,
+    pressed: toggleObsMode,
+  },
   {
     position: 6,
     label: "CDI",
-    pressed: ({ cycleCdiSource }) => cycleCdiSource(),
+    pressed: noopSoftKey,
   },
-  { position: 7, label: "DME", pressed: () => console.log("DME pressed") },
-  { position: 8, label: "XPDR", children: XPDRSoftKeys },
-  { position: 9, label: "IDENT", pressed: () => console.log("IDENT pressed") },
+  {
+    position: 7,
+    label: "DME",
+    isActive: (state) => state.dmeVisible,
+    pressed: toggleDme,
+  },
+  {
+    position: 8,
+    label: "XPDR",
+    isActive: (state) =>
+      state.transponderMode !== "ALT" ||
+      state.transponderCode !== "1200" ||
+      isTransponderIdentActive(state),
+    children: XPDRSoftKeys,
+  },
+  {
+    position: 9,
+    label: "IDENT",
+    isActive: isTransponderIdentActive,
+    pressed: startTransponderIdent,
+  },
   {
     position: 10,
     label: "TMR/REF",
-    pressed: () => console.log("TMR/REF pressed"),
+    isActive: (state) => state.timerRefVisible,
+    pressed: toggleTimerRef,
   },
-  { position: 11, label: "NRST", pressed: () => console.log("MSG pressed") },
+  {
+    position: 11,
+    label: "NRST",
+    isActive: (state) => state.nearestVisible,
+    pressed: toggleNearest,
+  },
   {
     position: 12,
     label: "ALERTS",
-    pressed: () => console.log("ALERTS pressed"),
+    isActive: (state) => state.alertsVisible,
+    pressed: toggleAlerts,
   },
 ];
 
 export function PrimaryFlightDisplay({
   displayRole,
   frameSrc,
+  gdc74aData,
+  gia63wData,
+  grs77Data,
   onControlInput,
 }: PrimaryFlightDisplayProps): ReactElement {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [activeSoftKeyPath, setActiveSoftKeyPath] = useState<SoftKeyPosition[]>(
     [],
   );
-  const [cdiSource, setCdiSource] = useState<CdiSource>(
-    dummyPfdData.radios.cdiSource,
+  const [softKeyState, setSoftKeyState] = useState<PfdSoftKeyState>(() =>
+    createDefaultPfdSoftKeyState(gdc74aData, gia63wData),
   );
 
   const softKeyActions = useMemo<SoftKeyActions>(
@@ -1024,12 +1461,10 @@ export function PrimaryFlightDisplay({
       back: () => {
         setActiveSoftKeyPath((path) => path.slice(0, -1));
       },
-      cycleCdiSource: () => {
-        setCdiSource((source) => getNextCdiSource(source));
-      },
       home: () => {
         setActiveSoftKeyPath([]);
       },
+      setSoftKeyState,
     }),
     [],
   );
@@ -1039,14 +1474,9 @@ export function PrimaryFlightDisplay({
     [activeSoftKeyPath],
   );
   const displayData = useMemo<PfdDisplayData>(
-    () => ({
-      ...dummyPfdData,
-      radios: {
-        ...dummyPfdData.radios,
-        cdiSource,
-      },
-    }),
-    [cdiSource],
+    () =>
+      composePfdDisplayData(gdc74aData, grs77Data, gia63wData, softKeyState),
+    [gdc74aData, grs77Data, gia63wData, softKeyState],
   );
 
   useEffect(() => {
@@ -1060,7 +1490,12 @@ export function PrimaryFlightDisplay({
     let animationFrameId = 0;
 
     function redraw(): void {
-      drawPfdCanvas(activeCanvas, displayData, visibleSoftKeys);
+      if (displayRole === "mfd") {
+        drawMfdPlaceholderCanvas(activeCanvas);
+      } else {
+        drawPfdCanvas(activeCanvas, displayData, visibleSoftKeys, softKeyState);
+      }
+
       animationFrameId = requestAnimationFrame(redraw);
     }
 
@@ -1069,10 +1504,11 @@ export function PrimaryFlightDisplay({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [displayData, visibleSoftKeys]);
+  }, [displayData, displayRole, softKeyState, visibleSoftKeys]);
 
   function handleSoftKeyPress(key: SoftKey): void {
     if (hasChildren(key)) {
+      key.opened?.(softKeyActions);
       softKeyActions.activate(key.position);
       return;
     }
@@ -1090,10 +1526,30 @@ export function PrimaryFlightDisplay({
 
       if (softKey) {
         handleSoftKeyPress(softKey);
+        onControlInput?.(softKey.label);
+        return;
       }
     }
 
     onControlInput?.(zone.label);
+  }
+
+  function handleHitZoneWheel(
+    event: ReactWheelEvent<HTMLButtonElement>,
+    zone: HitZone,
+  ): void {
+    if (zone.label !== "CRS/BARO knob") {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    onControlInput?.({
+      action: "turn",
+      control: zone.label,
+      direction: readWheelDirection(event.deltaY),
+    });
   }
 
   return (
@@ -1112,28 +1568,32 @@ export function PrimaryFlightDisplay({
       </span>
       <canvas
         ref={canvasRef}
-        aria-label="Primary flight display canvas"
+        aria-label={`${displayRole.toUpperCase()} display canvas`}
         id={`g1000-svg-panel__canvas-${displayRole}`}
         height={displayCanvas.height}
         width={displayCanvas.width}
         style={displayViewportStyle}
       />
-      <img
-        aria-hidden="true"
-        className="g1000-svg-panel__attitude-indicator"
-        src={attitudeIndicatorSrc}
-        alt=""
-        draggable={false}
-        style={attitudeIndicatorStyle}
-      />
-      <img
-        aria-hidden="true"
-        className="g1000-svg-panel__roll-pointer"
-        src={rollPointerSrc}
-        alt=""
-        draggable={false}
-        style={rollPointerStyle}
-      />
+      {displayRole === "pfd" && displayData.validity.ifDataValid ? (
+        <>
+          <img
+            aria-hidden="true"
+            className="g1000-svg-panel__attitude-indicator"
+            src={attitudeIndicatorSrc}
+            alt=""
+            draggable={false}
+            style={attitudeIndicatorStyle}
+          />
+          <img
+            aria-hidden="true"
+            className="g1000-svg-panel__roll-pointer"
+            src={rollPointerSrc}
+            alt=""
+            draggable={false}
+            style={rollPointerStyle}
+          />
+        </>
+      ) : null}
       <div className="g1000-svg-panel__hit-layer" aria-label="G1000 controls">
         {hitZones.map((zone) => (
           <button
@@ -1143,6 +1603,7 @@ export function PrimaryFlightDisplay({
             className={`g1000-hit-zone g1000-hit-zone--${zone.radius ?? "button"}`}
             style={getHitZoneStyle(zone)}
             onClick={() => handleHitZonePress(zone)}
+            onWheel={(event) => handleHitZoneWheel(event, zone)}
           />
         ))}
       </div>
@@ -1150,15 +1611,163 @@ export function PrimaryFlightDisplay({
   );
 }
 
-function getNextCdiSource(source: CdiSource): CdiSource {
-  switch (source) {
-    case "GPS":
-      return "NAV1";
-    case "NAV1":
-      return "NAV2";
-    case "NAV2":
-      return "GPS";
-  }
+function createDefaultPfdSoftKeyState(
+  gdc74aData: GDC74AData,
+  gia63wData: GIA63WData,
+): PfdSoftKeyState {
+  return {
+    alertsVisible: false,
+    barometerStandard: false,
+    barometerUnit: normalizeBarometerUnit(gdc74aData.altitude.barometerUnit),
+    bearing1: "OFF",
+    bearing2: "OFF",
+    dmeVisible: false,
+    hsiFormat: "360 HSI",
+    inset: {
+      declutterLevel: 0,
+      metar: false,
+      nexrad: false,
+      stormscope: false,
+      terrain: false,
+      topo: false,
+      traffic: false,
+      visible: false,
+      weatherLegend: false,
+      xmLightning: false,
+    },
+    nearestVisible: false,
+    obsMode: false,
+    showMetricAltitude: false,
+    syntheticVision: {
+      airportSigns: false,
+      horizonHeading: false,
+      pathway: false,
+      terrain: false,
+    },
+    timerRefVisible: false,
+    transponderCode: gia63wData.XPDR.transponderCode,
+    transponderCodeEntry: "",
+    transponderIdentUntilMs: null,
+    transponderMode: gia63wData.XPDR.transponderMode,
+    windMode: "OFF",
+  };
+}
+
+function getNextInsetDeclutterLevel(
+  level: InsetDeclutterLevel,
+): InsetDeclutterLevel {
+  return ((level + 1) % 4) as InsetDeclutterLevel;
+}
+
+function cycleBearingPointerMode(
+  mode: BearingPointerMode,
+  primaryNav: "NAV1" | "NAV2",
+): BearingPointerMode {
+  const modes: BearingPointerMode[] = ["OFF", primaryNav, "GPS"];
+  const currentIndex = modes.indexOf(mode);
+  const nextIndex = (currentIndex + 1) % modes.length;
+
+  return modes[nextIndex] ?? "OFF";
+}
+
+function getDisplayedTransponderCode(state: PfdSoftKeyState): string {
+  return state.transponderCodeEntry
+    ? state.transponderCodeEntry.padEnd(4, "_")
+    : state.transponderCode;
+}
+
+function composePfdDisplayData(
+  gdc74aData: GDC74AData,
+  grs77Data: GRS77Data,
+  gia63wData: GIA63WData,
+  softKeyState: PfdSoftKeyState,
+): PfdDisplayData {
+  return {
+    airspeed: {
+      bugKt: gia63wData.airspeed.bugKt,
+      indicatedKt: gdc74aData.airspeed.indicatedKts,
+      trueAirspeedKt: gdc74aData.airspeed.trueAirspeedKt,
+      trendKt: gia63wData.airspeed.trendKt,
+    },
+    altitude: {
+      altitudeFt: gdc74aData.altitude.altitudeFt,
+      barometerInHg: softKeyState.barometerStandard
+        ? 29.92
+        : gdc74aData.altitude.barometerInHg,
+      barometerUnit: softKeyState.barometerUnit,
+      showMetricAltitude: softKeyState.showMetricAltitude,
+      selectedAltitudeFt: gia63wData.altitude.selectedAltitudeFt,
+      verticalSpeedFpm: gdc74aData.altitude.verticalSpeedFpm,
+    },
+    attitude: {
+      pitchDeg: grs77Data.attitude.pitchDeg,
+      rollDeg: grs77Data.attitude.rollDeg,
+      slipSkidDeflection: grs77Data.attitude.slipSkidDeflection,
+    },
+    environment: {
+      isaC: gia63wData.environment.isaC,
+      oatC: gdc74aData.environment.oatC,
+      systemTime: gia63wData.systemTime,
+      transponderCode: getDisplayedTransponderCode(softKeyState),
+      transponderIdentActive: gia63wData.XPDR.transponderIdentActive,
+      transponderIdentUntilMs: softKeyState.transponderIdentUntilMs,
+      transponderMode: softKeyState.transponderMode,
+    },
+    heading: {
+      currentDeg: grs77Data.heading.currentDeg,
+      desiredTrackDeg: gia63wData.heading.desiredTrackDeg,
+      selectedDeg: gia63wData.heading.selectedDeg,
+      turnRateDegPerSec: grs77Data.heading.turnRateDegPerSec,
+    },
+    validity: {
+      ifDataValid: gia63wData.IFConnect.ifDataValid,
+    },
+    radios: {
+      bearingDeg: gia63wData.navMaster.bearingDeg,
+      cdiSource: gia63wData.navMaster.cdiSource,
+      com1Active: formatComFrequencyMHz(gia63wData.com1.activeFreqMHz),
+      com1Standby: formatComFrequencyMHz(gia63wData.com1.standbyFreqMHz),
+      com2Active: formatComFrequencyMHz(gia63wData.com2.activeFreqMHz),
+      com2Standby: formatComFrequencyMHz(gia63wData.com2.standbyFreqMHz),
+      comSource: gia63wData.radioMaster.comSource,
+      courseDeviation: gia63wData.navMaster.courseDeviation,
+      courseToFrom: gia63wData.navMaster.courseToFrom,
+      distanceNm: unresolvedNavigationFields.distanceNm,
+      isActiveNavaidReceived: gia63wData.navMaster.isActiveNavaidReceived,
+      nav1Active: formatNavFrequencyMHz(gia63wData.nav1.activeFreqMHz),
+      nav1SignalType: gia63wData.nav1.signalType,
+      nav1Standby: formatNavFrequencyMHz(gia63wData.nav1.standbyFreqMHz),
+      nav2Active: formatNavFrequencyMHz(gia63wData.nav2.activeFreqMHz),
+      nav2SignalType: gia63wData.nav2.signalType,
+      nav2Standby: formatNavFrequencyMHz(gia63wData.nav2.standbyFreqMHz),
+      navPhase: gia63wData.navMaster.navPhase,
+      navSource: gia63wData.radioMaster.navSource,
+      waypoint: unresolvedNavigationFields.waypoint,
+    },
+  };
+}
+
+function normalizeBarometerUnit(
+  unit: GDC74AData["altitude"]["barometerUnit"],
+): PfdDisplayData["altitude"]["barometerUnit"] {
+  return unit === "inHg" ? "IN" : "hPa";
+}
+
+function formatComFrequencyMHz(frequencyMHz: number): string {
+  return formatFrequencyMHz(frequencyMHz, 3);
+}
+
+function formatNavFrequencyMHz(frequencyMHz: number): string {
+  return formatFrequencyMHz(frequencyMHz, 2);
+}
+
+function formatFrequencyMHz(
+  frequencyMHz: number,
+  fractionDigits: number,
+): string {
+  return Number.isFinite(frequencyMHz)
+    ? frequencyMHz.toFixed(fractionDigits)
+    : "-".repeat(fractionDigits === 3 ? 7 : 6);
 }
 
 function getVisibleSoftKeys(
@@ -1183,7 +1792,12 @@ function getVisibleSoftKeys(
   return level;
 }
 
-function hasChildren(key: SoftKey): key is SoftKey & { children: SoftKey[] } {
+function hasChildren(
+  key: SoftKey,
+): key is SoftKey & {
+  children: SoftKey[];
+  opened?: (actions: SoftKeyActions) => void;
+} {
   return "children" in key;
 }
 
@@ -1197,6 +1811,10 @@ function readSoftKeyPosition(label: string): SoftKeyPosition | undefined {
   const position = Number.parseInt(match[1] ?? "", 10);
 
   return isSoftKeyPosition(position) ? position : undefined;
+}
+
+function readWheelDirection(deltaY: number): PanelInputDirection {
+  return deltaY < 0 ? "clockwise" : "counterclockwise";
 }
 
 function isSoftKeyPosition(position: number): position is SoftKeyPosition {
@@ -1251,6 +1869,7 @@ function drawPfdCanvas(
   canvas: HTMLCanvasElement,
   data: PfdDisplayData,
   softKeys: SoftKey[],
+  softKeyState: PfdSoftKeyState,
 ): void {
   const context = canvas.getContext("2d");
 
@@ -1258,29 +1877,56 @@ function drawPfdCanvas(
     return;
   }
 
-  console.log(canvas.width);
-
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = "#05070a";
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  drawArtificialHorizon(context, canvas.width, canvas.height, data.attitude);
-  drawAirspeedTape(context, data.airspeed);
-  drawTrueAirspeedBox(context, data.airspeed.trueAirspeedKt);
-  drawAltitudeTape(context, data.altitude);
-  drawSelectedAltitudeBox(context, data.altitude.selectedAltitudeFt);
-  drawBarometerBox(context, data.altitude);
-  drawVerticalSpeedIndicator(context, data.altitude.verticalSpeedFpm);
-  drawHorizontalSituationIndicator(context, data.heading, data.radios);
-  drawPresentHeadingBox(context, data.heading.currentDeg);
+  if (data.validity.ifDataValid) {
+    drawArtificialHorizon(context, canvas.width, canvas.height, data.attitude);
+    drawAirspeedTape(context, data.airspeed);
+    drawTrueAirspeedBox(context, data.airspeed.trueAirspeedKt);
+    drawAltitudeTape(context, data.altitude);
+    drawSelectedAltitudeBox(context, data.altitude.selectedAltitudeFt);
+    drawBarometerBox(context, data.altitude);
+    drawVerticalSpeedIndicator(context, data.altitude.verticalSpeedFpm);
+  } else {
+    drawInvalidFlightDataState(context);
+  }
+
+  drawHorizontalSituationIndicator(
+    context,
+    data.heading,
+    data.radios,
+    softKeyState.hsiFormat,
+  );
+  if (data.validity.ifDataValid) {
+    drawPresentHeadingBox(context, data.heading.currentDeg);
+  } else {
+    drawHeadingFailureBox(context);
+  }
   drawSelectedHeadingBox(context, data.heading.selectedDeg);
   drawSelectedCourseBox(
     context,
     data.heading.desiredTrackDeg,
     data.radios.cdiSource,
   );
-  drawBalanceBar(context, data.attitude.slipSkidDeflection);
-  drawSoftKeyLabels(context, softKeys, canvas.width, canvas.height);
+  if (data.validity.ifDataValid) {
+    drawBalanceBar(context, data.attitude.slipSkidDeflection);
+  }
+  drawSoftKeyStatusOverlays(
+    context,
+    canvas.width,
+    canvas.height,
+    data,
+    softKeyState,
+  );
+  drawSoftKeyLabels(
+    context,
+    softKeys,
+    softKeyState,
+    canvas.width,
+    canvas.height,
+  );
   drawTemperatureInfo(
     context,
     canvas.width,
@@ -1294,6 +1940,8 @@ function drawPfdCanvas(
     canvas.height,
     data.environment.systemTime,
     data.environment.transponderCode,
+    data.environment.transponderIdentActive,
+    data.environment.transponderIdentUntilMs,
     data.environment.transponderMode,
   );
   drawAutopilotPanel(context, canvas.width, canvas.height);
@@ -1301,6 +1949,259 @@ function drawPfdCanvas(
 
   drawNavStack(context, canvas.width, canvas.height, data.radios);
   drawCommStack(context, canvas.width, canvas.height, data.radios);
+
+  if (!data.validity.ifDataValid) {
+    drawFailedRadioStackXs(context, canvas.width);
+  }
+}
+
+function drawMfdPlaceholderCanvas(canvas: HTMLCanvasElement): void {
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return;
+  }
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "#05070a";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  context.save();
+  context.fillStyle = "#dce2e5";
+  context.font = "900 112px Inter, sans-serif";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText("MFD", canvas.width / 2, canvas.height / 2);
+  context.restore();
+}
+
+function drawInvalidFlightDataState(context: CanvasRenderingContext2D): void {
+  drawFailureRegion(context, {
+    fontPx: 18,
+    height: 292,
+    label: "ATTITUDE FAIL",
+    width: 430,
+    x: attitudeReferenceX - 215,
+    y: 82,
+  });
+  drawAttitudeFailureReference(context);
+
+  drawFailureRegion(context, {
+    fontPx: 16,
+    height: trueAirspeedBox.y + trueAirspeedBox.height - airspeedTape.y,
+    label: "AIRSPEED FAIL",
+    labelRotationDeg: -90,
+    width: airspeedTape.width,
+    x: airspeedTape.x,
+    y: airspeedTape.y,
+  });
+
+  drawFailureRegion(context, {
+    fontPx: 16,
+    height: barometerBox.y + barometerBox.height - selectedAltitudeBox.y,
+    label: "ALTITUDE FAIL",
+    labelRotationDeg: 90,
+    width: altitudeTape.width,
+    x: altitudeTape.x,
+    y: selectedAltitudeBox.y,
+  });
+
+  drawFailureRegion(context, {
+    fontPx: 12,
+    height: verticalSpeedIndicator.height,
+    label: "VERT SPEED",
+    labelRotationDeg: 90,
+    width: verticalSpeedIndicator.width,
+    x: verticalSpeedIndicator.x,
+    y: verticalSpeedIndicator.y,
+  });
+}
+
+function drawHeadingFailureBox(context: CanvasRenderingContext2D): void {
+  context.save();
+  context.fillStyle = "#050607";
+  context.fillRect(
+    presentHeadingBox.x,
+    presentHeadingBox.y,
+    presentHeadingBox.width,
+    presentHeadingBox.height,
+  );
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.strokeRect(
+    presentHeadingBox.x,
+    presentHeadingBox.y,
+    presentHeadingBox.width,
+    presentHeadingBox.height,
+  );
+  context.fillStyle = failedDataStyle.text;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.font = "800 17px Inter, sans-serif";
+  context.fillText(
+    "HDG",
+    presentHeadingBox.x + presentHeadingBox.width / 2,
+    presentHeadingBox.y + presentHeadingBox.height / 2 + 1,
+    presentHeadingBox.width - 6,
+  );
+  context.restore();
+
+  drawFailureX(context, {
+    height: presentHeadingBox.height,
+    width: presentHeadingBox.width,
+    x: presentHeadingBox.x,
+    y: presentHeadingBox.y,
+  });
+}
+
+function drawFailedRadioStackXs(
+  context: CanvasRenderingContext2D,
+  canvasWidth: number,
+): void {
+  const stackWidth = 265;
+  const stackHeight = 58;
+
+  drawFailureX(context, {
+    height: stackHeight,
+    width: stackWidth,
+    x: 0,
+    y: 0,
+  });
+  drawFailureX(context, {
+    height: stackHeight,
+    width: stackWidth,
+    x: canvasWidth - stackWidth,
+    y: 0,
+  });
+}
+
+function drawFailureRegion(
+  context: CanvasRenderingContext2D,
+  {
+    fontPx,
+    height,
+    label,
+    labelRotationDeg = 0,
+    width,
+    x,
+    y,
+  }: {
+    fontPx: number;
+    height: number;
+    label: string;
+    labelRotationDeg?: number;
+    width: number;
+    x: number;
+    y: number;
+  },
+): void {
+  context.save();
+  context.fillStyle = failedDataStyle.fill;
+  context.fillRect(x, y, width, height);
+  context.strokeStyle = "rgba(220, 226, 229, 0.72)";
+  context.lineWidth = 1;
+  context.strokeRect(x, y, width, height);
+  context.restore();
+
+  drawFailureX(context, { height, width, x, y });
+  drawFailureLabel(context, {
+    fontPx,
+    height,
+    label,
+    labelRotationDeg,
+    width,
+    x,
+    y,
+  });
+}
+
+function drawFailureX(
+  context: CanvasRenderingContext2D,
+  {
+    height,
+    width,
+    x,
+    y,
+  }: {
+    height: number;
+    width: number;
+    x: number;
+    y: number;
+  },
+): void {
+  const inset = Math.min(10, width * 0.18, height * 0.18);
+
+  context.save();
+  context.strokeStyle = failedDataStyle.stroke;
+  context.lineCap = "round";
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(x + inset, y + inset);
+  context.lineTo(x + width - inset, y + height - inset);
+  context.moveTo(x + width - inset, y + inset);
+  context.lineTo(x + inset, y + height - inset);
+  context.stroke();
+  context.restore();
+}
+
+function drawFailureLabel(
+  context: CanvasRenderingContext2D,
+  {
+    fontPx,
+    height,
+    label,
+    labelRotationDeg,
+    width,
+    x,
+    y,
+  }: {
+    fontPx: number;
+    height: number;
+    label: string;
+    labelRotationDeg: number;
+    width: number;
+    x: number;
+    y: number;
+  },
+): void {
+  const isRotated = labelRotationDeg !== 0;
+  const maxWidth = isRotated ? height - 16 : width - 20;
+
+  context.save();
+  context.translate(x + width / 2, y + height / 2);
+  context.rotate(degreesToRadians(labelRotationDeg));
+  context.fillStyle = failedDataStyle.text;
+  context.font = `800 ${fontPx}px Inter, sans-serif`;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(label, 0, 0, maxWidth);
+  context.restore();
+}
+
+function drawAttitudeFailureReference(context: CanvasRenderingContext2D): void {
+  const centerX = attitudeReferenceX;
+  const centerY = 277;
+  const wingY = centerY + 16;
+
+  context.save();
+  context.strokeStyle = failedDataStyle.text;
+  context.fillStyle = failedDataStyle.text;
+  context.lineCap = "round";
+  context.lineWidth = 3;
+
+  context.beginPath();
+  context.moveTo(centerX - 96, wingY + 17);
+  context.lineTo(centerX - 28, wingY);
+  context.moveTo(centerX + 28, wingY);
+  context.lineTo(centerX + 96, wingY + 17);
+  context.stroke();
+
+  context.beginPath();
+  context.moveTo(centerX - 18, centerY);
+  context.lineTo(centerX, centerY + 9);
+  context.lineTo(centerX + 18, centerY);
+  context.stroke();
+  context.restore();
 }
 
 function drawArtificialHorizon(
@@ -1376,6 +2277,7 @@ function drawHorizontalSituationIndicator(
   context: CanvasRenderingContext2D,
   heading: PfdDisplayData["heading"],
   radios: PfdDisplayData["radios"],
+  hsiFormat: HsiFormat,
 ): void {
   const centerX = hsi.x + hsi.width / 2;
   const centerY = hsi.y + hsi.height / 2;
@@ -1422,6 +2324,7 @@ function drawHorizontalSituationIndicator(
 
   drawPresentHeadingPointer(context, centerX);
   drawHsiHeadingBug(context, centerX, centerY, heading);
+  drawHsiFormatLabel(context, hsiFormat);
 }
 
 function drawHsiNavigationInfo(
@@ -1921,6 +2824,30 @@ function drawHsiHeadingBug(
   context.closePath();
   context.fill();
   context.stroke();
+  context.restore();
+}
+
+function drawHsiFormatLabel(
+  context: CanvasRenderingContext2D,
+  hsiFormat: HsiFormat,
+): void {
+  const text = hsiFormat === "ARC HSI" ? "ARC" : "360";
+  const width = 38;
+  const height = 18;
+  const x = hsi.x + hsi.width - width - 21;
+  const y = hsi.y + 18;
+
+  context.save();
+  context.fillStyle = "rgba(5, 7, 10, 0.74)";
+  context.fillRect(x, y, width, height);
+  context.strokeStyle = hsiFormat === "ARC HSI" ? "#ffffff" : "#8a9094";
+  context.lineWidth = 1;
+  context.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+  context.fillStyle = "#ffffff";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.font = "800 11px Inter, sans-serif";
+  context.fillText(text, x + width / 2, y + height / 2 + 1, width - 4);
   context.restore();
 }
 
@@ -2682,7 +3609,7 @@ function getAltitudeDigits(altitudeFt: number): {
   largeDigits: string;
   smallDigits: string;
 } {
-  const roundedAltitudeFt = Math.max(0, Math.round(altitudeFt));
+  const roundedAltitudeFt = Math.max(0, Math.round(altitudeFt / 10) * 10);
 
   return {
     largeDigits: Math.floor(roundedAltitudeFt / 100).toString(),
@@ -2992,6 +3919,8 @@ function drawXPDRTimeInfo(
   canvasHeight: number,
   systemTime: Date,
   transponderCode: string,
+  transponderIdentActive: boolean,
+  transponderIdentUntilMs: number | null,
   transponderMode: string,
 ): void {
   const rowHeight = 25;
@@ -3026,6 +3955,9 @@ function drawXPDRTimeInfo(
   context.lineWidth = 2;
   context.strokeRect(xpdrX, y, xpdrWidth, rowHeight);
   const isFlashing = Math.floor(Date.now() / 500) % 2 === 0; // Flash every 500ms
+  const isIdentActive =
+    transponderIdentActive ||
+    (transponderIdentUntilMs !== null && Date.now() < transponderIdentUntilMs);
   const isAltitudeReporting = transponderMode.toUpperCase() === "ALT";
   const transponderCodeItem: CanvasTextItem = isAltitudeReporting
     ? { color: "#4be17b", text: transponderCode }
@@ -3040,7 +3972,10 @@ function drawXPDRTimeInfo(
       { text: "XPDR" },
       transponderCodeItem,
       transponderModeItem,
-      { color: "#ffffff", text: isFlashing ? "R" : "" },
+      {
+        color: "#ffffff",
+        text: isIdentActive && isFlashing ? "R" : "",
+      },
     ],
     paddingX: 6,
     width: xpdrWidth,
@@ -3075,7 +4010,11 @@ function drawTemperatureInfo(
   context.textBaseline = "middle";
   context.fillText("OAT", oatX + 5, y + rowHeight / 2);
   context.textAlign = "right";
-  context.fillText(`${oatC}ºC`, oatX + oatWidth - 5, y + rowHeight / 2);
+  context.fillText(
+    `${oatC.toFixed(0)}ºC`,
+    oatX + oatWidth - 5,
+    y + rowHeight / 2,
+  );
   // ISA Box
   const isaWidth = 87;
   const isaX = oatX + oatWidth;
@@ -3132,9 +4071,301 @@ function drawFlexTextRow(
   context.restore();
 }
 
+function drawSoftKeyStatusOverlays(
+  context: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  data: PfdDisplayData,
+  softKeyState: PfdSoftKeyState,
+): void {
+  if (softKeyState.inset.visible) {
+    drawInsetStatusPanel(context, softKeyState);
+  }
+
+  if (hasSyntheticVisionEnabled(softKeyState)) {
+    drawSyntheticVisionStatusPanel(context, softKeyState);
+  }
+
+  if (softKeyState.windMode !== "OFF") {
+    drawWindStatusPanel(context, data.heading, softKeyState.windMode);
+  }
+
+  if (softKeyState.dmeVisible) {
+    drawDmeStatusPanel(context, data.radios);
+  }
+
+  drawBearingStatusPanels(context, data.radios, softKeyState);
+
+  if (softKeyState.obsMode) {
+    drawObsStatusPanel(context, data.heading, data.radios);
+  }
+
+  if (data.altitude.showMetricAltitude) {
+    drawMetricAltitudePanel(context, data.altitude);
+  }
+
+  drawSoftKeyPagePanels(context, canvasWidth, canvasHeight, softKeyState);
+}
+
+function drawInsetStatusPanel(
+  context: CanvasRenderingContext2D,
+  softKeyState: PfdSoftKeyState,
+): void {
+  const layers = [
+    softKeyState.inset.weatherLegend ? "WX" : "",
+    softKeyState.inset.traffic ? "TRFC" : "",
+    softKeyState.inset.topo ? "TOPO" : "",
+    softKeyState.inset.terrain ? "TERR" : "",
+    softKeyState.inset.stormscope ? "STRM" : "",
+    softKeyState.inset.nexrad ? "NEX" : "",
+    softKeyState.inset.xmLightning ? "LTNG" : "",
+    softKeyState.inset.metar ? "METAR" : "",
+  ].filter(Boolean);
+
+  drawStatusPanel(context, {
+    height: 76,
+    lines: [
+      `DCLTR ${softKeyState.inset.declutterLevel}`,
+      layers.length > 0 ? layers.join(" ") : "BASE MAP",
+    ],
+    title: "INSET MAP",
+    width: 154,
+    x: 266,
+    y: 68,
+  });
+}
+
+function drawSyntheticVisionStatusPanel(
+  context: CanvasRenderingContext2D,
+  softKeyState: PfdSoftKeyState,
+): void {
+  const enabled = [
+    softKeyState.syntheticVision.pathway ? "PATH" : "",
+    softKeyState.syntheticVision.terrain ? "TERR" : "",
+    softKeyState.syntheticVision.horizonHeading ? "HDG" : "",
+    softKeyState.syntheticVision.airportSigns ? "APT" : "",
+  ].filter(Boolean);
+
+  drawStatusPanel(context, {
+    height: 48,
+    lines: [enabled.join(" ")],
+    title: "SYN VIS",
+    width: 132,
+    x: 444,
+    y: 68,
+  });
+}
+
+function drawWindStatusPanel(
+  context: CanvasRenderingContext2D,
+  heading: PfdDisplayData["heading"],
+  windMode: WindDisplayMode,
+): void {
+  const direction = normalizeHeading(heading.currentDeg + 35);
+  const speedKt = 12;
+  const lines =
+    windMode === "OPTN1"
+      ? [`${formatHeadingValue(direction)}º/${speedKt}KT`]
+      : windMode === "OPTN2"
+        ? ["XWIND", `${Math.round(speedKt * 0.6)}KT`]
+        : ["HEADWIND", `${Math.round(speedKt * 0.8)}KT`];
+
+  drawStatusPanel(context, {
+    height: 48,
+    lines,
+    title: "WIND",
+    width: 86,
+    x: 606,
+    y: 378,
+  });
+}
+
+function drawDmeStatusPanel(
+  context: CanvasRenderingContext2D,
+  radios: PfdDisplayData["radios"],
+): void {
+  const source =
+    radios.cdiSource === "GPS" ? `NAV${radios.navSource}` : radios.cdiSource;
+  const distance =
+    radios.distanceNm > 0 ? radios.distanceNm.toFixed(1) : "--.-";
+
+  drawStatusPanel(context, {
+    height: 45,
+    lines: [`${source} ${distance}NM`],
+    title: "DME",
+    width: 100,
+    x: 590,
+    y: 526,
+  });
+}
+
+function drawBearingStatusPanels(
+  context: CanvasRenderingContext2D,
+  radios: PfdDisplayData["radios"],
+  softKeyState: PfdSoftKeyState,
+): void {
+  if (softKeyState.bearing1 !== "OFF") {
+    drawStatusPanel(context, {
+      height: 43,
+      lines: [formatBearingPointerLine(softKeyState.bearing1, radios)],
+      title: "BRG1",
+      width: 110,
+      x: 262,
+      y: 610,
+    });
+  }
+
+  if (softKeyState.bearing2 !== "OFF") {
+    drawStatusPanel(context, {
+      height: 43,
+      lines: [formatBearingPointerLine(softKeyState.bearing2, radios)],
+      title: "BRG2",
+      width: 110,
+      x: 594,
+      y: 610,
+    });
+  }
+}
+
+function drawObsStatusPanel(
+  context: CanvasRenderingContext2D,
+  heading: PfdDisplayData["heading"],
+  radios: PfdDisplayData["radios"],
+): void {
+  drawStatusPanel(context, {
+    height: 45,
+    lines: [
+      `${radios.cdiSource} ${formatHeadingValue(heading.desiredTrackDeg)}º`,
+    ],
+    title: "OBS",
+    width: 86,
+    x: 469,
+    y: 568,
+  });
+}
+
+function drawMetricAltitudePanel(
+  context: CanvasRenderingContext2D,
+  altitude: PfdDisplayData["altitude"],
+): void {
+  drawStatusPanel(context, {
+    height: 51,
+    lines: [
+      `${feetToMeters(altitude.altitudeFt)}M`,
+      `SEL ${feetToMeters(altitude.selectedAltitudeFt)}M`,
+    ],
+    title: "METERS",
+    width: 82,
+    x: 816,
+    y: 82,
+  });
+}
+
+function drawSoftKeyPagePanels(
+  context: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  softKeyState: PfdSoftKeyState,
+): void {
+  const panels: { lines: string[]; title: string }[] = [];
+
+  if (softKeyState.timerRefVisible) {
+    panels.push({
+      lines: ["TIMER 00:00", "FUEL REM --:--"],
+      title: "TMR/REF",
+    });
+  }
+
+  if (softKeyState.nearestVisible) {
+    panels.push({
+      lines: ["APT --.-NM", "VOR --.-NM"],
+      title: "NEAREST",
+    });
+  }
+
+  if (softKeyState.alertsVisible) {
+    panels.push({
+      lines: ["NO ACTIVE ALERTS"],
+      title: "ALERTS",
+    });
+  }
+
+  panels.forEach((panel, index) => {
+    drawStatusPanel(context, {
+      height: 58,
+      lines: panel.lines,
+      title: panel.title,
+      width: 154,
+      x: canvasWidth / 2 - 77,
+      y: Math.min(330, 132 + index * 66, canvasHeight - 250),
+    });
+  });
+}
+
+function drawStatusPanel(
+  context: CanvasRenderingContext2D,
+  {
+    height,
+    lines,
+    title,
+    width,
+    x,
+    y,
+  }: {
+    height: number;
+    lines: string[];
+    title: string;
+    width: number;
+    x: number;
+    y: number;
+  },
+): void {
+  context.save();
+  context.fillStyle = "rgba(5, 7, 10, 0.78)";
+  context.fillRect(x, y, width, height);
+  context.strokeStyle = "#dce2e5";
+  context.lineWidth = 1;
+  context.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+
+  context.textAlign = "left";
+  context.textBaseline = "top";
+  context.fillStyle = "#8af5ff";
+  context.font = "900 10px Inter, sans-serif";
+  context.fillText(title, x + 6, y + 5, width - 12);
+
+  context.fillStyle = "#ffffff";
+  context.font = "800 11px Inter, sans-serif";
+  lines.forEach((line, index) => {
+    context.fillText(line, x + 6, y + 22 + index * 14, width - 12);
+  });
+  context.restore();
+}
+
+function formatBearingPointerLine(
+  mode: BearingPointerMode,
+  radios: PfdDisplayData["radios"],
+): string {
+  const bearingText = Number.isFinite(radios.bearingDeg)
+    ? `${formatHeadingValue(radios.bearingDeg)}º`
+    : "---º";
+
+  return `${mode} ${bearingText}`;
+}
+
+function feetToMeters(feet: number): number {
+  return Math.round(feet * 0.3048);
+}
+
+function normalizeHeading(headingDeg: number): number {
+  const normalized = headingDeg % 360;
+
+  return normalized <= 0 ? normalized + 360 : normalized;
+}
+
 function drawSoftKeyLabels(
   context: CanvasRenderingContext2D,
   softKeys: SoftKey[],
+  softKeyState: PfdSoftKeyState,
   canvasWidth: number,
   canvasHeight: number,
 ): void {
@@ -3157,7 +4388,7 @@ function drawSoftKeyLabels(
   for (let i = 0; i < 12; i++) {
     // Draw the soft key separator lines
     const x = (canvasWidth / 12) * i;
-    context.strokeStyle = "#fffff";
+    context.strokeStyle = "#ffffff";
     context.lineWidth = 2;
     context.beginPath();
     context.moveTo(x, y);
@@ -3175,8 +4406,19 @@ function drawSoftKeyLabels(
     const columnWidth = canvasWidth / softKeyPositions.length;
     const centerX = columnWidth * (position - 0.5);
     const labelY = y + rowHeight / 2;
+    const active = key.isActive?.(softKeyState) ?? false;
 
-    context.fillStyle = "#dce2e5";
+    if (active) {
+      context.fillStyle = "#ffffff";
+      context.fillRect(
+        columnWidth * (position - 1) + 6,
+        y + 2,
+        columnWidth - 12,
+        2,
+      );
+    }
+
+    context.fillStyle = active ? "#ffffff" : "#aeb4b7";
     context.fillText(key.label, centerX, labelY);
   }
 

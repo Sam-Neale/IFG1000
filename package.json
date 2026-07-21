@@ -25,5 +25,8 @@
     "typescript": "^7.0.2",
     "vite": "^7.3.6",
     "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "ifc-node": "^1.1.1"
   }
 }

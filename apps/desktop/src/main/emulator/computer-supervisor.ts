@@ -24,7 +24,16 @@ interface ComputerRuntime {
   id: EmulatorComputerId;
 }
 
+interface DisplayWindowAttachment {
+  displayRole: DisplayRole;
+  windowId: number;
+}
+
 export class ComputerSupervisor extends EventEmitter {
+  private readonly displayAttachments = new Map<
+    EmulatorComputerId,
+    DisplayWindowAttachment
+  >();
   private readonly runtimes = new Map<EmulatorComputerId, ComputerRuntime>();
   private readonly hostPath = join(__dirname, "computer-host.js");
 
@@ -110,11 +119,22 @@ export class ComputerSupervisor extends EventEmitter {
   }
 
   attachDisplayWindow(window: BrowserWindow, displayRole: DisplayRole): void {
-    this.send(gduComputerByDisplayRole[displayRole], {
+    const computerId = gduComputerByDisplayRole[displayRole];
+
+    this.displayAttachments.set(computerId, {
       displayRole,
-      type: "attach-display-window",
       windowId: window.id,
     });
+
+    window.once("closed", () => {
+      const attachment = this.displayAttachments.get(computerId);
+
+      if (attachment?.windowId === window.id) {
+        this.displayAttachments.delete(computerId);
+      }
+    });
+
+    this.sendDisplayAttachment(computerId);
   }
 
   dispatchPanelInput(input: PanelInputEvent): void {
@@ -136,6 +156,11 @@ export class ComputerSupervisor extends EventEmitter {
   private handleHostMessage(message: ComputerHostMessage): void {
     this.emit("event", message);
 
+    if (message.type === "computer-ready") {
+      this.sendDisplayAttachment(message.computer.id);
+      return;
+    }
+
     if (message.type === "bus-message") {
       this.routeBusMessage(message.message);
     }
@@ -146,8 +171,11 @@ export class ComputerSupervisor extends EventEmitter {
       message.target === "broadcast" ? defaultBusRoutes[message.source] : [message.target];
 
     for (const target of targets) {
+      const routedMessage: EmulatorBusMessage =
+        message.target === "broadcast" ? { ...message, target } : message;
+
       this.send(target, {
-        message,
+        message: routedMessage,
         type: "bus-message",
       });
     }
@@ -161,5 +189,18 @@ export class ComputerSupervisor extends EventEmitter {
     }
 
     runtime.child.postMessage(message);
+  }
+
+  private sendDisplayAttachment(computerId: EmulatorComputerId): void {
+    const attachment = this.displayAttachments.get(computerId);
+
+    if (!attachment) {
+      return;
+    }
+
+    this.send(computerId, {
+      ...attachment,
+      type: "attach-display-window",
+    });
   }
 }

@@ -27,12 +27,10 @@ The host marks itself ready, loads the matching computer module from `apps/deskt
 
 ## Computer Modules
 
-Each emulated computer has its own TypeScript file:
+Each emulated computer family has its own TypeScript file; role-specific processes derive their PFD/MFD or #1/#2 behavior from the process ID supplied by the factory:
 
-- `gdu-1044b-pfd.ts`
-- `gdu-1044b-mfd.ts`
-- `gia-63w-1.ts`
-- `gia-63w-2.ts`
+- `gdu-1044b.ts`
+- `gia-63w.ts`
 - `gdc-74a.ts`
 - `grs-77.ts`
 - `gmu-44.ts`
@@ -87,4 +85,4 @@ Each computer writes to its own file:
 
 ## Bus
 
-The bus topology lives in `apps/desktop/src/main/emulator/topology.ts`. It now mirrors the clarified process hierarchy: each GDU owns its own GIA child, shared output LRUs publish into the GIA side, and bidirectional LRUs use routed bus messages.
+The bus topology lives in `apps/desktop/src/main/emulator/topology.ts`. It now mirrors the clarified process hierarchy: each GDU owns its own GIA child, shared output LRUs publish into the GIA side, bidirectional LRUs use routed bus messages, and the GDC 74A also feeds the PFD GDU directly so air-data updates can reach the display without waiting for IAU-derived state.

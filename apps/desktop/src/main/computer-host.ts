@@ -37,18 +37,6 @@ logger.info("Computer host process starting", {
   title: process.title,
 });
 
-send({
-  computer,
-  timestamp: Date.now(),
-  type: "computer-ready",
-});
-
-program.start?.();
-
-if (childComputer) {
-  childProcess = spawnChildComputer(childComputer);
-}
-
 registerParentMessageHandler((message) => {
   logger.debug("Supervisor IPC message received", {
     type: message.type,
@@ -76,6 +64,18 @@ registerParentMessageHandler((message) => {
     forwardBusMessageToChild(message);
   }
 });
+
+send({
+  computer,
+  timestamp: Date.now(),
+  type: "computer-ready",
+});
+
+program.start?.();
+
+if (childComputer) {
+  childProcess = spawnChildComputer(childComputer);
+}
 
 function forwardBusMessageToChild(message: SupervisorMessage): void {
   if (message.type !== "bus-message" || !childComputer || !childProcess?.connected) {

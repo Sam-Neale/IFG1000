@@ -81,7 +81,7 @@ export const defaultBusRoutes: Record<EmulatorComputerId, EmulatorComputerId[]> 
   "gdu-1044b-mfd": ["gia-63w-2"],
   "gia-63w-1": ["gdu-1044b-pfd", "gdc-74a", "grs-77", "gmu-44", "gtx-33", "gea-71"],
   "gia-63w-2": ["gdu-1044b-mfd", "gdc-74a", "grs-77", "gmu-44", "gtx-33", "gea-71"],
-  "gdc-74a": ["gia-63w-1", "gia-63w-2"],
+  "gdc-74a": ["gia-63w-1", "gia-63w-2", "gdu-1044b-pfd"],
   "grs-77": ["gia-63w-1", "gia-63w-2"],
   "gmu-44": ["grs-77"],
   "gtx-33": ["gia-63w-1", "gia-63w-2"],

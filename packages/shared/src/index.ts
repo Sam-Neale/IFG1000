@@ -9,6 +9,12 @@ export const IPC_CHANNELS = {
   computerEvent: "ifg1000:computer-event",
 } as const;
 
+export const EMULATOR_DATA_TOPICS = {
+  gdc74a: "gdc-74a/data",
+  gia63w: "gia-63w/data",
+  grs77: "grs-77/data",
+} as const;
+
 export type DisplayRole = "pfd" | "mfd";
 export type PanelKind = "gdu-1044b" | "gma-1347";
 
@@ -30,9 +36,12 @@ export interface RendererContext {
   windowId: number;
 }
 
+export type PanelInputDirection = "clockwise" | "counterclockwise";
+
 export interface PanelInputEvent {
   action: "press" | "release" | "turn";
   control: string;
+  direction?: PanelInputDirection;
   displayRole?: DisplayRole;
   panel: PanelKind;
   timestamp: number;
@@ -67,6 +76,14 @@ export type ComputerHostMessage =
       windowId: number;
     }
   | {
+      computerId: EmulatorComputerId;
+      displayRole: DisplayRole;
+      message: EmulatorBusMessage;
+      timestamp: number;
+      type: "display-bus-message";
+      windowId: number;
+    }
+  | {
       message: EmulatorBusMessage;
       timestamp: number;
       type: "bus-message";
@@ -97,6 +114,199 @@ export interface EmulatorBusMessage {
   source: EmulatorComputerId;
   target: EmulatorComputerId | "broadcast";
   topic: string;
+}
+
+export type BarometerUnit = "hPa" | "inHg";
+export type CdiSource = "GPS" | "NAV1" | "NAV2";
+export type CourseToFrom = "TO" | "FROM";
+export type NavPhase =
+  | "DPRT"
+  | "TERM"
+  | "ENR"
+  | "OCN"
+  | "LNAV"
+  | "LNAV + V"
+  | "L/VNAV"
+  | "LPV"
+  | "LP"
+  | "MAPR";
+export type NavSignalType = "VOR" | "LOC" | "GS" | "ILS" | "OFF";
+export type TransponderMode = "STBY" | "ON" | "ALT" | "GND";
+
+export interface GDC74AData {
+  environment: {
+    oatC: number;
+  };
+  airspeed: {
+    indicatedKts: number;
+    trueAirspeedKt: number;
+  };
+  altitude: {
+    altitudeFt: number;
+    barometerInHg: number;
+    barometerUnit: BarometerUnit;
+    verticalSpeedFpm: number;
+  };
+}
+
+export interface GRS77Data {
+  attitude: {
+    pitchDeg: number;
+    rollDeg: number;
+    slipSkidDeflection: number;
+  };
+  heading: {
+    currentDeg: number;
+    turnRateDegPerSec: number;
+  };
+}
+
+export interface GIA63WData {
+  systemTime: Date;
+  airspeed: {
+    bugKt: number;
+    trendKt: number;
+  };
+  altitude: {
+    selectedAltitudeFt: number;
+  };
+  environment: {
+    isaC: number;
+  };
+  heading: {
+    desiredTrackDeg: number;
+    selectedDeg: number;
+  };
+  radioMaster: {
+    comSource: 1 | 2;
+    navSource: 1 | 2;
+  };
+  navMaster: {
+    cdiSource: CdiSource;
+    courseToFrom: CourseToFrom;
+    navPhase: NavPhase;
+    isActiveNavaidReceived: boolean;
+    bearingDeg: number;
+    courseDeviation: number;
+  };
+  com1: {
+    activeFreqMHz: number;
+    standbyFreqMHz: number;
+  };
+  com2: {
+    activeFreqMHz: number;
+    standbyFreqMHz: number;
+  };
+  nav1: {
+    activeFreqMHz: number;
+    standbyFreqMHz: number;
+    signalType: NavSignalType;
+  };
+  nav2: {
+    activeFreqMHz: number;
+    standbyFreqMHz: number;
+    signalType: NavSignalType;
+  };
+  IFConnect: {
+    ifDataValid: boolean;
+  };
+  XPDR: {
+    transponderCode: string;
+    transponderMode: TransponderMode;
+    transponderIdentActive: boolean;
+  };
+}
+
+export function createPlaceholderGDC74AData(): GDC74AData {
+  return {
+    environment: {
+      oatC: 7,
+    },
+    airspeed: {
+      indicatedKts: 115,
+      trueAirspeedKt: 315,
+    },
+    altitude: {
+      altitudeFt: 5000,
+      barometerInHg: 29.92,
+      barometerUnit: "inHg",
+      verticalSpeedFpm: 0,
+    },
+  };
+}
+
+export function createPlaceholderGRS77Data(): GRS77Data {
+  return {
+    attitude: {
+      pitchDeg: 0,
+      rollDeg: 0,
+      slipSkidDeflection: 0,
+    },
+    heading: {
+      currentDeg: 326,
+      turnRateDegPerSec: 2,
+    },
+  };
+}
+
+export function createPlaceholderGIA63WData(
+  systemTime = new Date(),
+): GIA63WData {
+  return {
+    systemTime,
+    airspeed: {
+      bugKt: 210,
+      trendKt: 4,
+    },
+    altitude: {
+      selectedAltitudeFt: 5200,
+    },
+    environment: {
+      isaC: -6,
+    },
+    heading: {
+      desiredTrackDeg: 105,
+      selectedDeg: 15,
+    },
+    radioMaster: {
+      comSource: 1,
+      navSource: 1,
+    },
+    navMaster: {
+      bearingDeg: 105,
+      cdiSource: "GPS",
+      courseDeviation: 0,
+      courseToFrom: "TO",
+      isActiveNavaidReceived: true,
+      navPhase: "ENR",
+    },
+    com1: {
+      activeFreqMHz: 118.1,
+      standbyFreqMHz: 136.275,
+    },
+    com2: {
+      activeFreqMHz: 118.3,
+      standbyFreqMHz: 118.4,
+    },
+    nav1: {
+      activeFreqMHz: 108,
+      signalType: "VOR",
+      standbyFreqMHz: 117.95,
+    },
+    nav2: {
+      activeFreqMHz: 108,
+      signalType: "VOR",
+      standbyFreqMHz: 117.95,
+    },
+    IFConnect: {
+      ifDataValid: true,
+    },
+    XPDR: {
+      transponderCode: "1200",
+      transponderIdentActive: false,
+      transponderMode: "ALT",
+    },
+  };
 }
 
 export type ComputerEvent =
@@ -172,7 +382,9 @@ export interface DesktopApi {
   getSnapshot: () => Promise<AvionicsSnapshot>;
   onAvionicsEvent: (listener: (event: AvionicsEvent) => void) => () => void;
   onComputerEvent: (listener: (event: ComputerEvent) => void) => () => void;
-  sendPanelInput: (input: Omit<PanelInputEvent, "timestamp" | "windowId">) => Promise<void>;
+  sendPanelInput: (
+    input: Omit<PanelInputEvent, "timestamp" | "windowId">,
+  ) => Promise<void>;
   startDiscovery: () => Promise<SimulatorConnectionStatus>;
   stopDiscovery: () => Promise<SimulatorConnectionStatus>;
 }

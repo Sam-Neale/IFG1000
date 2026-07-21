@@ -23,6 +23,7 @@ const displayCanvas = {
   height: 768,
   width: 1024,
 } as const;
+const attitudeReferenceX = 460;
 const displayViewport = {
   height: 793,
   width: 1056,
@@ -32,26 +33,26 @@ const displayViewport = {
 const attitudeIndicator = {
   height: 38,
   width: 414,
-  x: displayCanvas.width / 2,
+  x: attitudeReferenceX,
   top: 288,
 } as const;
 const rollScale = {
   height: 120,
   width: 385,
-  x: displayCanvas.width / 2,
+  x: attitudeReferenceX,
   top: 75,
 } as const;
 const rollPointer = {
   height: 22,
   width: 22,
-  x: displayCanvas.width / 2,
+  x: attitudeReferenceX,
   top: 97,
 } as const;
 const balanceBar = {
   deflectionPixels: 26,
   height: 5,
   width: 30,
-  x: displayCanvas.width / 2,
+  x: attitudeReferenceX,
   top: 123,
 } as const;
 const airspeedTape = {
@@ -72,6 +73,85 @@ const trueAirspeedBox = {
   x: airspeedTape.x,
   y: airspeedTape.y + airspeedTape.height,
 } as const;
+const selectedAltitudeBox = {
+  height: 32,
+  largeDigitFontPx: 20,
+  smallDigitFontPx: 16,
+  width: 108,
+  x: 702,
+  y: 82,
+} as const;
+const altitudeTape = {
+  height: 342,
+  labelRightPadding: 7,
+  majorTickFt: 100,
+  majorTickWidth: 34,
+  minorTickFt: 20,
+  minorTickWidth: 18,
+  viewFt: 600,
+  width: 108,
+  x: selectedAltitudeBox.x,
+  y: selectedAltitudeBox.y + selectedAltitudeBox.height,
+} as const;
+const altitudePointer = {
+  height: 43,
+  largeDigitFontPx: 25,
+  smallDigitFontPx: 20,
+  triangleHeight: 29,
+  triangleWidth: 14,
+  width: 88,
+  x: 717,
+  y: 263,
+} as const;
+const altitudeBug = {
+  color: "#8af5ff",
+  height: 29,
+  width: 14,
+  x: altitudePointer.x - altitudePointer.triangleWidth,
+} as const;
+const barometerBox = {
+  height: 25,
+  unitFontPx: 13,
+  valueFontPx: 18,
+  width: altitudeTape.width,
+  x: altitudeTape.x,
+  y: altitudeTape.y + altitudeTape.height,
+} as const;
+const verticalSpeedIndicator = {
+  height: 322,
+  lowerRectHeight: 135,
+  majorLabelFontPx: 18,
+  majorTickFpm: 1000,
+  majorTickWidth: 16,
+  maxFpm: 2000,
+  minorTickFpm: 500,
+  minorTickWidth: 10,
+  taperHeight: 26,
+  upperRectHeight: 135,
+  width: 45,
+  x: 810,
+  y: 126,
+} as const;
+const verticalSpeedPointer = {
+  fontPx: 15,
+  rectangleHeight: 22,
+  rectangleWidth: 46,
+  triangleHeight: 22,
+  triangleWidth: 22,
+} as const;
+const selectedHeadingBox = {
+  height: 27,
+  labelFontPx: 13,
+  textInset: 1,
+  valueFontPx: 17,
+  width: 85,
+  x: 275,
+  y: 427,
+} as const;
+const selectedCourseBox = {
+  ...selectedHeadingBox,
+  x: 559,
+} as const;
 const airspeedRangeLimits = {
   cautionMaxKt: 163,
   cautionMinKt: 129,
@@ -86,6 +166,8 @@ const airspeedRangeLimits = {
 const rollScaleImage = createCanvasImage(rollScaleSrc);
 const balanceBarImage = createCanvasImage(balanceBarSrc);
 
+type CdiSource = "GPS" | "VOR1" | "VOR2";
+
 interface PfdDisplayData {
   airspeed: {
     bugKt: number;
@@ -96,6 +178,7 @@ interface PfdDisplayData {
   altitude: {
     altitudeFt: number;
     barometerInHg: number;
+    barometerUnit: "hPa" | "IN";
     selectedAltitudeFt: number;
     verticalSpeedFpm: number;
   };
@@ -123,6 +206,7 @@ interface PfdDisplayData {
     com2Active: string;
     com2Standby: string;
     comSource: 1 | 2;
+    cdiSource: CdiSource;
     distanceNm: number;
     nav1Active: string;
     nav1Standby: string;
@@ -141,9 +225,10 @@ const dummyPfdData: PfdDisplayData = {
     trendKt: 4,
   },
   altitude: {
-    altitudeFt: 2000,
+    altitudeFt: 5000,
     barometerInHg: 29.92,
-    selectedAltitudeFt: 2500,
+    barometerUnit: "hPa",
+    selectedAltitudeFt: 5200,
     verticalSpeedFpm: 0,
   },
   attitude: {
@@ -172,6 +257,7 @@ const dummyPfdData: PfdDisplayData = {
     com2Active: "118.300",
     com2Standby: "118.400",
     comSource: 1,
+    cdiSource: "GPS",
     distanceNm: 51.5,
     nav1Active: "108.00",
     nav1Standby: "117.95",
@@ -510,6 +596,7 @@ type SoftKey = {
 interface SoftKeyActions {
   activate: (position: SoftKeyPosition) => void;
   back: () => void;
+  cycleCdiSource: () => void;
   home: () => void;
 }
 
@@ -783,7 +870,11 @@ const topLevelSoftKeys: SoftKey[] = [
   { position: 2, label: "INSET", children: insetSoftKeys },
   { position: 4, label: "PFD", children: PFDConfigSoftKeys },
   { position: 5, label: "OBS", pressed: () => console.log("OBS pressed") },
-  { position: 6, label: "CDI", pressed: () => console.log("CDI pressed") },
+  {
+    position: 6,
+    label: "CDI",
+    pressed: ({ cycleCdiSource }) => cycleCdiSource(),
+  },
   { position: 7, label: "DME", pressed: () => console.log("DME pressed") },
   { position: 8, label: "XPDR", children: XPDRSoftKeys },
   { position: 9, label: "IDENT", pressed: () => console.log("IDENT pressed") },
@@ -809,6 +900,9 @@ export function PrimaryFlightDisplay({
   const [activeSoftKeyPath, setActiveSoftKeyPath] = useState<SoftKeyPosition[]>(
     [],
   );
+  const [cdiSource, setCdiSource] = useState<CdiSource>(
+    dummyPfdData.radios.cdiSource,
+  );
 
   const softKeyActions = useMemo<SoftKeyActions>(
     () => ({
@@ -824,6 +918,9 @@ export function PrimaryFlightDisplay({
       back: () => {
         setActiveSoftKeyPath((path) => path.slice(0, -1));
       },
+      cycleCdiSource: () => {
+        setCdiSource((source) => getNextCdiSource(source));
+      },
       home: () => {
         setActiveSoftKeyPath([]);
       },
@@ -834,6 +931,16 @@ export function PrimaryFlightDisplay({
   const visibleSoftKeys = useMemo(
     () => getVisibleSoftKeys(topLevelSoftKeys, activeSoftKeyPath),
     [activeSoftKeyPath],
+  );
+  const displayData = useMemo<PfdDisplayData>(
+    () => ({
+      ...dummyPfdData,
+      radios: {
+        ...dummyPfdData.radios,
+        cdiSource,
+      },
+    }),
+    [cdiSource],
   );
 
   useEffect(() => {
@@ -847,7 +954,7 @@ export function PrimaryFlightDisplay({
     let animationFrameId = 0;
 
     function redraw(): void {
-      drawPfdCanvas(activeCanvas, dummyPfdData, visibleSoftKeys);
+      drawPfdCanvas(activeCanvas, displayData, visibleSoftKeys);
       animationFrameId = requestAnimationFrame(redraw);
     }
 
@@ -856,7 +963,7 @@ export function PrimaryFlightDisplay({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [visibleSoftKeys]);
+  }, [displayData, visibleSoftKeys]);
 
   function handleSoftKeyPress(key: SoftKey): void {
     if (hasChildren(key)) {
@@ -935,6 +1042,17 @@ export function PrimaryFlightDisplay({
       </div>
     </article>
   );
+}
+
+function getNextCdiSource(source: CdiSource): CdiSource {
+  switch (source) {
+    case "GPS":
+      return "VOR1";
+    case "VOR1":
+      return "VOR2";
+    case "VOR2":
+      return "GPS";
+  }
 }
 
 function getVisibleSoftKeys(
@@ -1043,6 +1161,16 @@ function drawPfdCanvas(
   drawArtificialHorizon(context, canvas.width, canvas.height, data.attitude);
   drawAirspeedTape(context, data.airspeed);
   drawTrueAirspeedBox(context, data.airspeed.trueAirspeedKt);
+  drawAltitudeTape(context, data.altitude);
+  drawSelectedAltitudeBox(context, data.altitude.selectedAltitudeFt);
+  drawBarometerBox(context, data.altitude);
+  drawVerticalSpeedIndicator(context, data.altitude.verticalSpeedFpm);
+  drawSelectedHeadingBox(context, data.heading.selectedDeg);
+  drawSelectedCourseBox(
+    context,
+    data.heading.desiredTrackDeg,
+    data.radios.cdiSource,
+  );
   drawBalanceBar(context, data.attitude.slipSkidDeflection);
   drawSoftKeyLabels(context, softKeys, canvas.width, canvas.height);
   drawTemperatureInfo(
@@ -1081,7 +1209,7 @@ function drawArtificialHorizon(
   const horizonHeight = levelSkyHeight + horizonLineHeight + levelGroundHeight;
   const levelHorizonLineY = horizonTop + levelSkyHeight;
   const pitchOffsetY = attitude.pitchDeg * pitchPixelsPerDegree;
-  const horizonCenterX = canvasWidth / 2;
+  const horizonCenterX = attitudeReferenceX;
   const rollRad = (-attitude.rollDeg * Math.PI) / 180;
   const fillExtent = Math.hypot(canvasWidth, canvasHeight) * 2;
 
@@ -1222,11 +1350,653 @@ function drawTrueAirspeedBox(
   context.textAlign = "right";
   context.font =
     "800 17px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
-  context.fillText(`${Math.round(trueAirspeedKt)}`, valueRightX, centerY, valueWidth);
+  context.fillText(
+    `${Math.round(trueAirspeedKt)}`,
+    valueRightX,
+    centerY,
+    valueWidth,
+  );
 
   context.font = "800 14px Inter, sans-serif";
   context.fillText("KT", ktRightX, centerY, ktWidth);
   context.restore();
+}
+
+function drawAltitudeTape(
+  context: CanvasRenderingContext2D,
+  altitude: PfdDisplayData["altitude"],
+): void {
+  const indicatedAltitudeFt = Number.isFinite(altitude.altitudeFt)
+    ? Math.max(0, altitude.altitudeFt)
+    : 0;
+  const pixelsPerFt = altitudeTape.height / altitudeTape.viewFt;
+  const pointerCenterY = altitudePointer.y + altitudePointer.height / 2;
+  const altitudeToY = (altitudeFt: number): number =>
+    pointerCenterY - (altitudeFt - indicatedAltitudeFt) * pixelsPerFt;
+  const visibleMinFt =
+    indicatedAltitudeFt -
+    (altitudeTape.y + altitudeTape.height - pointerCenterY) / pixelsPerFt;
+  const visibleMaxFt =
+    indicatedAltitudeFt + (pointerCenterY - altitudeTape.y) / pixelsPerFt;
+  const firstTickFt = Math.max(
+    0,
+    Math.ceil(visibleMinFt / altitudeTape.minorTickFt) *
+      altitudeTape.minorTickFt,
+  );
+  const lastTickFt =
+    Math.floor(visibleMaxFt / altitudeTape.minorTickFt) *
+    altitudeTape.minorTickFt;
+
+  context.save();
+  context.beginPath();
+  context.rect(
+    altitudeTape.x,
+    altitudeTape.y,
+    altitudeTape.width,
+    altitudeTape.height,
+  );
+  context.clip();
+
+  context.fillStyle = "rgba(5, 19, 28, 0.2)";
+  context.fillRect(
+    altitudeTape.x,
+    altitudeTape.y,
+    altitudeTape.width,
+    altitudeTape.height,
+  );
+
+  context.strokeStyle = "#dce2e5";
+  context.lineWidth = 2;
+
+  for (
+    let tickFt = firstTickFt;
+    tickFt <= lastTickFt;
+    tickFt += altitudeTape.minorTickFt
+  ) {
+    const y = altitudeToY(tickFt);
+    const isMajorTick = tickFt % altitudeTape.majorTickFt === 0;
+    const tickLength = isMajorTick
+      ? altitudeTape.majorTickWidth
+      : altitudeTape.minorTickWidth;
+
+    context.beginPath();
+    context.moveTo(altitudeTape.x, y);
+    context.lineTo(altitudeTape.x + tickLength, y);
+    context.stroke();
+
+    if (isMajorTick) {
+      drawAltitudeValue(context, {
+        align: "right",
+        altitudeFt: tickFt,
+        color: "#dce2e5",
+        largeFontPx: selectedAltitudeBox.largeDigitFontPx,
+        smallFontPx: selectedAltitudeBox.smallDigitFontPx,
+        x: altitudeTape.x + altitudeTape.width - altitudeTape.labelRightPadding,
+        y,
+      });
+    }
+  }
+
+  drawAltitudeBug(context, altitude.selectedAltitudeFt, altitudeToY);
+
+  context.restore();
+
+  context.save();
+  context.strokeStyle = "rgba(220, 226, 229, 0.9)";
+  context.lineWidth = 2;
+  context.strokeRect(
+    altitudeTape.x,
+    altitudeTape.y,
+    altitudeTape.width,
+    altitudeTape.height,
+  );
+  context.restore();
+
+  drawAltitudePointer(context, indicatedAltitudeFt);
+}
+
+function drawSelectedAltitudeBox(
+  context: CanvasRenderingContext2D,
+  selectedAltitudeFt: number,
+): void {
+  context.save();
+  context.fillStyle = "#050607";
+  context.fillRect(
+    selectedAltitudeBox.x,
+    selectedAltitudeBox.y,
+    selectedAltitudeBox.width,
+    selectedAltitudeBox.height,
+  );
+  context.strokeStyle = "#1f7bb8";
+  context.lineWidth = 1;
+  context.strokeRect(
+    selectedAltitudeBox.x + 0.5,
+    selectedAltitudeBox.y + 0.5,
+    selectedAltitudeBox.width - 1,
+    selectedAltitudeBox.height - 1,
+  );
+
+  drawAltitudeValue(context, {
+    align: "center",
+    altitudeFt: selectedAltitudeFt,
+    color: "#5fdcff",
+    largeFontPx: selectedAltitudeBox.largeDigitFontPx,
+    smallFontPx: selectedAltitudeBox.smallDigitFontPx,
+    x: selectedAltitudeBox.x + selectedAltitudeBox.width / 2,
+    y: selectedAltitudeBox.y + selectedAltitudeBox.height / 2 + 1,
+  });
+  context.restore();
+}
+
+function drawBarometerBox(
+  context: CanvasRenderingContext2D,
+  altitude: PfdDisplayData["altitude"],
+): void {
+  const { unit, value } = formatBarometerValue(
+    altitude.barometerInHg,
+    altitude.barometerUnit,
+  );
+  const valueFont = `800 ${barometerBox.valueFontPx}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
+  const unitFont = `800 ${barometerBox.unitFontPx}px Inter, sans-serif`;
+  const centerX = barometerBox.x + barometerBox.width / 2;
+  const centerY = barometerBox.y + barometerBox.height / 2 + 1;
+
+  context.save();
+  context.fillStyle = "#050607";
+  context.fillRect(
+    barometerBox.x,
+    barometerBox.y,
+    barometerBox.width,
+    barometerBox.height,
+  );
+  context.strokeStyle = "rgba(220, 226, 229, 0.85)";
+  context.lineWidth = 2;
+  context.strokeRect(
+    barometerBox.x,
+    barometerBox.y,
+    barometerBox.width,
+    barometerBox.height,
+  );
+
+  context.fillStyle = "#8af5ff";
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.font = valueFont;
+  const valueWidth = context.measureText(value).width;
+  context.font = unitFont;
+  const unitWidth = context.measureText(unit).width;
+  const textX = centerX - (valueWidth + unitWidth) / 2;
+
+  context.font = valueFont;
+  context.fillText(value, textX, centerY);
+  context.font = unitFont;
+  context.fillText(unit, textX + valueWidth, centerY);
+  context.restore();
+}
+
+function formatBarometerValue(
+  barometerInHg: number,
+  unit: PfdDisplayData["altitude"]["barometerUnit"],
+): {
+  unit: "hPa" | "IN";
+  value: string;
+} {
+  if (unit === "hPa") {
+    return {
+      unit,
+      value: Math.round(barometerInHg * 33.8638866667)
+        .toString()
+        .padStart(4, "0"),
+    };
+  }
+
+  return {
+    unit,
+    value: barometerInHg.toFixed(2).padStart(5, "0"),
+  };
+}
+
+function drawSelectedHeadingBox(
+  context: CanvasRenderingContext2D,
+  selectedHeadingDeg: number,
+): void {
+  const centerY = selectedHeadingBox.y + selectedHeadingBox.height / 2;
+
+  context.save();
+  context.fillStyle = "#050607";
+  context.fillRect(
+    selectedHeadingBox.x,
+    selectedHeadingBox.y,
+    selectedHeadingBox.width,
+    selectedHeadingBox.height,
+  );
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.strokeRect(
+    selectedHeadingBox.x,
+    selectedHeadingBox.y,
+    selectedHeadingBox.width,
+    selectedHeadingBox.height,
+  );
+
+  context.textBaseline = "middle";
+  context.textAlign = "left";
+  context.fillStyle = "#ffffff";
+  context.font = `800 ${selectedHeadingBox.labelFontPx}px Inter, sans-serif`;
+  context.fillText(
+    "HDG",
+    selectedHeadingBox.x + selectedHeadingBox.textInset,
+    centerY,
+  );
+
+  context.textAlign = "right";
+  context.fillStyle = "#5fdcff";
+  context.font = `800 ${selectedHeadingBox.valueFontPx}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
+  context.fillText(
+    `${formatHeadingValue(selectedHeadingDeg)}º`,
+    selectedHeadingBox.x + selectedHeadingBox.width - selectedHeadingBox.textInset,
+    centerY,
+  );
+  context.restore();
+}
+
+function drawSelectedCourseBox(
+  context: CanvasRenderingContext2D,
+  selectedCourseDeg: number,
+  cdiSource: PfdDisplayData["radios"]["cdiSource"],
+): void {
+  const centerY = selectedCourseBox.y + selectedCourseBox.height / 2;
+
+  context.save();
+  context.fillStyle = "#050607";
+  context.fillRect(
+    selectedCourseBox.x,
+    selectedCourseBox.y,
+    selectedCourseBox.width,
+    selectedCourseBox.height,
+  );
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.strokeRect(
+    selectedCourseBox.x,
+    selectedCourseBox.y,
+    selectedCourseBox.width,
+    selectedCourseBox.height,
+  );
+
+  context.textBaseline = "middle";
+  context.textAlign = "left";
+  context.fillStyle = "#ffffff";
+  context.font = `800 ${selectedCourseBox.labelFontPx}px Inter, sans-serif`;
+  context.fillText(
+    "CRS",
+    selectedCourseBox.x + selectedCourseBox.textInset,
+    centerY,
+  );
+
+  context.textAlign = "right";
+  context.fillStyle = cdiSource === "GPS" ? "#ff4dff" : "#4be17b";
+  context.font = `800 ${selectedCourseBox.valueFontPx}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
+  context.fillText(
+    `${formatHeadingValue(selectedCourseDeg)}º`,
+    selectedCourseBox.x + selectedCourseBox.width - selectedCourseBox.textInset,
+    centerY,
+  );
+  context.restore();
+}
+
+function drawVerticalSpeedIndicator(
+  context: CanvasRenderingContext2D,
+  verticalSpeedFpm: number,
+): void {
+  const geometry = getVerticalSpeedIndicatorGeometry();
+  const verticalSpeedToY = (speedFpm: number): number =>
+    geometry.centerY -
+    (speedFpm / verticalSpeedIndicator.maxFpm) * geometry.scaleHalfHeight;
+
+  context.save();
+  drawVerticalSpeedIndicatorBackground(context, geometry);
+  drawVerticalSpeedIndicatorTicks(context, verticalSpeedToY);
+  drawVerticalSpeedIndicatorOutline(context, geometry);
+  drawVerticalSpeedPointer(
+    context,
+    geometry,
+    verticalSpeedFpm,
+    verticalSpeedToY,
+  );
+  context.restore();
+}
+
+function getVerticalSpeedIndicatorGeometry(): {
+  bottom: number;
+  centerY: number;
+  lowerRectTop: number;
+  right: number;
+  scaleBottomY: number;
+  scaleHalfHeight: number;
+  scaleTopY: number;
+  taperTop: number;
+  x: number;
+  y: number;
+} {
+  const x = verticalSpeedIndicator.x;
+  const y = verticalSpeedIndicator.y;
+  const right = x + verticalSpeedIndicator.width;
+  const bottom = y + verticalSpeedIndicator.height;
+  const taperTop = y + verticalSpeedIndicator.upperRectHeight;
+  const centerY = taperTop + verticalSpeedIndicator.taperHeight;
+  const lowerRectTop = centerY + verticalSpeedIndicator.taperHeight;
+  const scaleTopY = y + verticalSpeedIndicator.taperHeight;
+  const scaleBottomY = bottom - verticalSpeedIndicator.taperHeight;
+
+  return {
+    bottom,
+    centerY,
+    lowerRectTop,
+    right,
+    scaleBottomY,
+    scaleHalfHeight: centerY - scaleTopY,
+    scaleTopY,
+    taperTop,
+    x,
+    y,
+  };
+}
+
+function drawVerticalSpeedIndicatorBackground(
+  context: CanvasRenderingContext2D,
+  geometry: ReturnType<typeof getVerticalSpeedIndicatorGeometry>,
+): void {
+  context.save();
+  context.fillStyle = "rgba(5, 19, 28, 0.08)";
+  drawVerticalSpeedIndicatorPath(context, geometry);
+  context.fill();
+  context.restore();
+}
+
+function drawVerticalSpeedIndicatorTicks(
+  context: CanvasRenderingContext2D,
+  verticalSpeedToY: (speedFpm: number) => number,
+): void {
+  context.save();
+  context.strokeStyle = "#dce2e5";
+  context.fillStyle = "#dce2e5";
+  context.lineWidth = 2;
+  context.textAlign = "right";
+  context.textBaseline = "middle";
+  context.font = `800 ${verticalSpeedIndicator.majorLabelFontPx}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
+
+  for (
+    let speedFpm = -verticalSpeedIndicator.maxFpm;
+    speedFpm <= verticalSpeedIndicator.maxFpm;
+    speedFpm += verticalSpeedIndicator.minorTickFpm
+  ) {
+    const isMajorTick =
+      Math.abs(speedFpm) === verticalSpeedIndicator.majorTickFpm ||
+      Math.abs(speedFpm) === verticalSpeedIndicator.maxFpm;
+    const tickWidth = isMajorTick
+      ? verticalSpeedIndicator.majorTickWidth
+      : verticalSpeedIndicator.minorTickWidth;
+    const tickY = verticalSpeedToY(speedFpm);
+
+    context.beginPath();
+    context.moveTo(verticalSpeedIndicator.x, tickY);
+    context.lineTo(verticalSpeedIndicator.x + tickWidth, tickY);
+    context.stroke();
+
+    if (isMajorTick) {
+      context.fillText(
+        `${Math.abs(speedFpm) / verticalSpeedIndicator.majorTickFpm}`,
+        verticalSpeedIndicator.x + verticalSpeedIndicator.width - 7,
+        tickY + 1,
+        verticalSpeedIndicator.width - tickWidth - 5,
+      );
+    }
+  }
+
+  context.restore();
+}
+
+function drawVerticalSpeedIndicatorOutline(
+  context: CanvasRenderingContext2D,
+  geometry: ReturnType<typeof getVerticalSpeedIndicatorGeometry>,
+): void {
+  context.save();
+  context.strokeStyle = "rgba(220, 226, 229, 0.9)";
+  context.lineWidth = 2;
+  drawVerticalSpeedIndicatorPath(context, geometry);
+  context.stroke();
+  context.restore();
+}
+
+function drawVerticalSpeedIndicatorPath(
+  context: CanvasRenderingContext2D,
+  geometry: ReturnType<typeof getVerticalSpeedIndicatorGeometry>,
+): void {
+  context.beginPath();
+  context.moveTo(geometry.x, geometry.y);
+  context.lineTo(geometry.right, geometry.y);
+  context.lineTo(geometry.right, geometry.taperTop);
+  context.lineTo(geometry.x, geometry.centerY);
+  context.lineTo(geometry.right, geometry.lowerRectTop);
+  context.lineTo(geometry.right, geometry.bottom);
+  context.lineTo(geometry.x, geometry.bottom);
+  context.closePath();
+}
+
+function drawVerticalSpeedPointer(
+  context: CanvasRenderingContext2D,
+  geometry: ReturnType<typeof getVerticalSpeedIndicatorGeometry>,
+  verticalSpeedFpm: number,
+  verticalSpeedToY: (speedFpm: number) => number,
+): void {
+  const finiteVerticalSpeedFpm = Number.isFinite(verticalSpeedFpm)
+    ? verticalSpeedFpm
+    : 0;
+  const pointerCenterY =
+    finiteVerticalSpeedFpm > verticalSpeedIndicator.maxFpm
+      ? geometry.y
+      : finiteVerticalSpeedFpm < -verticalSpeedIndicator.maxFpm
+        ? geometry.bottom
+        : verticalSpeedToY(finiteVerticalSpeedFpm);
+  const triangleHalfHeight = verticalSpeedPointer.triangleHeight / 2;
+  const rectangleTop =
+    pointerCenterY - verticalSpeedPointer.rectangleHeight / 2;
+  const rectangleX =
+    verticalSpeedIndicator.x + verticalSpeedPointer.triangleWidth;
+  const rectangleRight = rectangleX + verticalSpeedPointer.rectangleWidth;
+  const rectangleBottom = rectangleTop + verticalSpeedPointer.rectangleHeight;
+  const triangleTop = pointerCenterY - triangleHalfHeight;
+  const triangleBottom = pointerCenterY + triangleHalfHeight;
+
+  context.save();
+  context.fillStyle = "#050607";
+  context.strokeStyle = "rgba(220, 226, 229, 0.9)";
+  context.lineWidth = 2;
+
+  context.beginPath();
+  context.moveTo(verticalSpeedIndicator.x, pointerCenterY);
+  context.lineTo(rectangleX, triangleTop);
+  context.lineTo(rectangleX, triangleBottom);
+  context.closePath();
+  context.fill();
+
+  context.fillRect(
+    rectangleX,
+    rectangleTop,
+    verticalSpeedPointer.rectangleWidth,
+    verticalSpeedPointer.rectangleHeight,
+  );
+
+  context.beginPath();
+  context.moveTo(verticalSpeedIndicator.x, pointerCenterY);
+  context.lineTo(rectangleX, triangleTop);
+  context.moveTo(verticalSpeedIndicator.x, pointerCenterY);
+  context.lineTo(rectangleX, triangleBottom);
+  context.moveTo(rectangleX, rectangleTop);
+  context.lineTo(rectangleRight, rectangleTop);
+  context.moveTo(rectangleX, rectangleBottom);
+  context.lineTo(rectangleRight, rectangleBottom);
+  context.moveTo(rectangleRight, rectangleTop);
+  context.lineTo(rectangleRight, rectangleBottom);
+  context.stroke();
+
+  if (Math.abs(finiteVerticalSpeedFpm) > 100) {
+    const pointerText = `${
+      Math.round(Math.abs(finiteVerticalSpeedFpm) / 10) * 10
+    }`;
+
+    context.fillStyle = "#ffffff";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.font = `800 ${verticalSpeedPointer.fontPx}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
+    context.fillText(
+      pointerText,
+      rectangleX + verticalSpeedPointer.rectangleWidth / 2,
+      pointerCenterY + 1,
+      verticalSpeedPointer.rectangleWidth - 4,
+    );
+  }
+
+  context.restore();
+}
+
+function drawAltitudeBug(
+  context: CanvasRenderingContext2D,
+  selectedAltitudeFt: number,
+  altitudeToY: (altitudeFt: number) => number,
+): void {
+  if (!Number.isFinite(selectedAltitudeFt)) {
+    return;
+  }
+
+  const bugCenterY = altitudeToY(selectedAltitudeFt);
+
+  if (
+    bugCenterY < altitudeTape.y ||
+    bugCenterY > altitudeTape.y + altitudeTape.height
+  ) {
+    return;
+  }
+
+  const bugTop = bugCenterY - altitudeBug.height / 2;
+  const bugBottom = bugTop + altitudeBug.height;
+  const bugRight = altitudeBug.x + altitudeBug.width;
+
+  context.save();
+  context.fillStyle = altitudeBug.color;
+  context.beginPath();
+  context.rect(altitudeBug.x, bugTop, altitudeBug.width, altitudeBug.height);
+  context.moveTo(altitudeBug.x, bugCenterY);
+  context.lineTo(bugRight, bugTop);
+  context.lineTo(bugRight, bugBottom);
+  context.closePath();
+  context.fill("evenodd");
+
+  context.strokeStyle = altitudeBug.color;
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(bugRight, bugTop);
+  context.lineTo(altitudeBug.x, bugTop);
+  context.lineTo(altitudeBug.x, bugBottom);
+  context.lineTo(bugRight, bugBottom);
+  context.moveTo(altitudeBug.x, bugCenterY);
+  context.lineTo(bugRight, bugTop);
+  context.moveTo(altitudeBug.x, bugCenterY);
+  context.lineTo(bugRight, bugBottom);
+  context.stroke();
+  context.restore();
+}
+
+function drawAltitudePointer(
+  context: CanvasRenderingContext2D,
+  indicatedAltitudeFt: number,
+): void {
+  const pointerCenterY = altitudePointer.y + altitudePointer.height / 2;
+  const triangleTop = pointerCenterY - altitudePointer.triangleHeight / 2;
+  const triangleBottom = triangleTop + altitudePointer.triangleHeight;
+  const triangleTipX = altitudePointer.x - altitudePointer.triangleWidth;
+
+  context.save();
+  context.fillStyle = "#050607";
+  context.beginPath();
+  context.moveTo(triangleTipX, pointerCenterY);
+  context.lineTo(altitudePointer.x, triangleTop);
+  context.lineTo(altitudePointer.x, triangleBottom);
+  context.closePath();
+  context.fill();
+  context.fillRect(
+    altitudePointer.x,
+    altitudePointer.y,
+    altitudePointer.width,
+    altitudePointer.height,
+  );
+
+  drawAltitudeValue(context, {
+    align: "center",
+    altitudeFt: indicatedAltitudeFt,
+    color: "#ffffff",
+    largeFontPx: altitudePointer.largeDigitFontPx,
+    smallFontPx: altitudePointer.smallDigitFontPx,
+    x: altitudePointer.x + altitudePointer.width / 2,
+    y: altitudePointer.y + altitudePointer.height / 2 + 1,
+  });
+  context.restore();
+}
+
+function drawAltitudeValue(
+  context: CanvasRenderingContext2D,
+  {
+    align,
+    altitudeFt,
+    color,
+    largeFontPx,
+    smallFontPx,
+    x,
+    y,
+  }: {
+    align: "center" | "right";
+    altitudeFt: number;
+    color: string;
+    largeFontPx: number;
+    smallFontPx: number;
+    x: number;
+    y: number;
+  },
+): void {
+  const { largeDigits, smallDigits } = getAltitudeDigits(altitudeFt);
+  const largeDigitFont = `800 ${largeFontPx}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
+  const smallDigitFont = `800 ${smallFontPx}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
+
+  context.save();
+  context.textAlign = "left";
+  context.textBaseline = "middle";
+  context.fillStyle = color;
+  context.font = largeDigitFont;
+
+  const largeDigitWidth = context.measureText(largeDigits).width;
+  context.font = smallDigitFont;
+  const smallDigitWidth = context.measureText(smallDigits).width;
+  const textWidth = largeDigitWidth + smallDigitWidth;
+  const textX = align === "center" ? x - textWidth / 2 : x - textWidth;
+
+  context.font = largeDigitFont;
+  context.fillText(largeDigits, textX, y);
+  context.font = smallDigitFont;
+  context.fillText(smallDigits, textX + largeDigitWidth, y);
+  context.restore();
+}
+
+function getAltitudeDigits(altitudeFt: number): {
+  largeDigits: string;
+  smallDigits: string;
+} {
+  const roundedAltitudeFt = Math.max(0, Math.round(altitudeFt));
+
+  return {
+    largeDigits: Math.floor(roundedAltitudeFt / 100).toString(),
+    smallDigits: (roundedAltitudeFt % 100).toString().padStart(2, "0"),
+  };
 }
 
 function drawAirspeedRangeStrip(
@@ -1408,7 +2178,7 @@ function drawRollScale(
     return;
   }
 
-  const x = rollScale.x - displayCanvas.width / 2 - rollScale.width / 2;
+  const x = rollScale.x - attitudeReferenceX - rollScale.width / 2;
   const y = rollScale.top - levelHorizonLineY;
 
   context.drawImage(rollScaleImage, x, y, rollScale.width, rollScale.height);

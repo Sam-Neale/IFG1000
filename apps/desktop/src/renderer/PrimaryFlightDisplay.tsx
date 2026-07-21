@@ -54,6 +54,35 @@ const balanceBar = {
   x: displayCanvas.width / 2,
   top: 123,
 } as const;
+const airspeedTape = {
+  height: 342,
+  pointerGapToRangeStrip: 3,
+  pointerHeight: 41,
+  pointerWidth: 69,
+  pointerY: 264,
+  rangeStripWidth: 12,
+  viewKt: 60,
+  width: 88,
+  x: 152.88,
+  y: 114,
+} as const;
+const trueAirspeedBox = {
+  height: 25,
+  width: airspeedTape.width,
+  x: airspeedTape.x,
+  y: airspeedTape.y + airspeedTape.height,
+} as const;
+const airspeedRangeLimits = {
+  cautionMaxKt: 163,
+  cautionMinKt: 129,
+  flapMaxKt: 60,
+  flapMinKt: 50,
+  lowAwarenessMaxKt: 50,
+  minKt: 20,
+  normalMaxKt: 129,
+  normalMinKt: 60,
+  vneKt: 163,
+} as const;
 const rollScaleImage = createCanvasImage(rollScaleSrc);
 const balanceBarImage = createCanvasImage(balanceBarSrc);
 
@@ -107,7 +136,7 @@ interface PfdDisplayData {
 const dummyPfdData: PfdDisplayData = {
   airspeed: {
     bugKt: 210,
-    indicatedKt: 135,
+    indicatedKt: 115,
     trueAirspeedKt: 315,
     trendKt: 4,
   },
@@ -1012,6 +1041,8 @@ function drawPfdCanvas(
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   drawArtificialHorizon(context, canvas.width, canvas.height, data.attitude);
+  drawAirspeedTape(context, data.airspeed);
+  drawTrueAirspeedBox(context, data.airspeed.trueAirspeedKt);
   drawBalanceBar(context, data.attitude.slipSkidDeflection);
   drawSoftKeyLabels(context, softKeys, canvas.width, canvas.height);
   drawTemperatureInfo(
@@ -1103,6 +1134,270 @@ function drawBalanceBar(
     balanceBar.width,
     balanceBar.height,
   );
+}
+
+function drawAirspeedTape(
+  context: CanvasRenderingContext2D,
+  airspeed: PfdDisplayData["airspeed"],
+): void {
+  const indicatedKt = Math.max(0, airspeed.indicatedKt);
+  const projectedKt = indicatedKt + airspeed.trendKt;
+  const pixelsPerKt = airspeedTape.height / airspeedTape.viewKt;
+  const pointerY = airspeedTape.y + airspeedTape.height / 2;
+  const speedToY = (speedKt: number): number =>
+    pointerY - (speedKt - indicatedKt) * pixelsPerKt;
+
+  context.save();
+  context.beginPath();
+  context.rect(
+    airspeedTape.x,
+    airspeedTape.y,
+    airspeedTape.width,
+    airspeedTape.height,
+  );
+  context.clip();
+
+  context.fillStyle = "rgba(6, 92, 153, 0.74)";
+  context.fillRect(
+    airspeedTape.x,
+    airspeedTape.y,
+    airspeedTape.width,
+    airspeedTape.height,
+  );
+
+  drawAirspeedRangeStrip(context, speedToY, indicatedKt);
+  drawAirspeedTicks(context, speedToY, indicatedKt);
+
+  context.restore();
+
+  drawAirspeedTrendVector(context, speedToY, airspeed.trendKt, projectedKt);
+
+  context.strokeStyle = "rgba(200, 224, 239, 0.88)";
+  context.lineWidth = 2;
+  context.strokeRect(
+    airspeedTape.x,
+    airspeedTape.y,
+    airspeedTape.width,
+    airspeedTape.height,
+  );
+
+  drawAirspeedPointer(context, indicatedKt, projectedKt);
+}
+
+function drawTrueAirspeedBox(
+  context: CanvasRenderingContext2D,
+  trueAirspeedKt: number,
+): void {
+  const paddingLeft = 3;
+  const paddingRight = 1;
+  const centerY = trueAirspeedBox.y + trueAirspeedBox.height / 2;
+  const ktWidth = 18;
+  const valueWidth = 30;
+  const ktRightX = trueAirspeedBox.x + trueAirspeedBox.width - paddingRight;
+  const valueRightX = ktRightX - ktWidth;
+
+  context.save();
+  context.fillStyle = "#050607";
+  context.fillRect(
+    trueAirspeedBox.x,
+    trueAirspeedBox.y,
+    trueAirspeedBox.width,
+    trueAirspeedBox.height,
+  );
+  context.strokeStyle = "#ffffff";
+  context.lineWidth = 2;
+  context.strokeRect(
+    trueAirspeedBox.x,
+    trueAirspeedBox.y,
+    trueAirspeedBox.width,
+    trueAirspeedBox.height,
+  );
+
+  context.fillStyle = "#ffffff";
+  context.textBaseline = "middle";
+  context.textAlign = "left";
+  context.font = "800 15px Inter, sans-serif";
+  context.fillText("TAS", trueAirspeedBox.x + paddingLeft, centerY, 29);
+
+  context.textAlign = "right";
+  context.font =
+    "800 17px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+  context.fillText(`${Math.round(trueAirspeedKt)}`, valueRightX, centerY, valueWidth);
+
+  context.font = "800 14px Inter, sans-serif";
+  context.fillText("KT", ktRightX, centerY, ktWidth);
+  context.restore();
+}
+
+function drawAirspeedRangeStrip(
+  context: CanvasRenderingContext2D,
+  speedToY: (speedKt: number) => number,
+  indicatedKt: number,
+): void {
+  const visibleMinKt = Math.max(
+    airspeedRangeLimits.minKt,
+    indicatedKt - airspeedTape.viewKt / 2,
+  );
+  const visibleMaxKt = indicatedKt + airspeedTape.viewKt / 2;
+  const stripX = getAirspeedRangeStripX();
+  const ranges = [
+    {
+      color: "#c7242f",
+      fromKt: airspeedRangeLimits.minKt,
+      toKt: airspeedRangeLimits.lowAwarenessMaxKt,
+    },
+    {
+      color: "#f2f4f5",
+      fromKt: airspeedRangeLimits.flapMinKt,
+      toKt: airspeedRangeLimits.flapMaxKt,
+    },
+    {
+      color: "#42a859",
+      fromKt: airspeedRangeLimits.normalMinKt,
+      toKt: airspeedRangeLimits.normalMaxKt,
+    },
+    {
+      color: "#f0dd37",
+      fromKt: airspeedRangeLimits.cautionMinKt,
+      toKt: airspeedRangeLimits.cautionMaxKt,
+    },
+    {
+      color: "#c7242f",
+      fromKt: airspeedRangeLimits.vneKt,
+      toKt: Math.max(airspeedRangeLimits.vneKt, visibleMaxKt),
+    },
+  ];
+
+  for (const range of ranges) {
+    const fromKt = Math.max(range.fromKt, visibleMinKt);
+    const toKt = Math.min(range.toKt, visibleMaxKt);
+
+    if (toKt <= fromKt) {
+      continue;
+    }
+
+    const y = speedToY(toKt);
+    const height = speedToY(fromKt) - y;
+
+    context.fillStyle = range.color;
+    context.fillRect(stripX, y, airspeedTape.rangeStripWidth, height);
+  }
+}
+
+function drawAirspeedTicks(
+  context: CanvasRenderingContext2D,
+  speedToY: (speedKt: number) => number,
+  indicatedKt: number,
+): void {
+  const visibleMinKt = Math.max(
+    airspeedRangeLimits.minKt,
+    indicatedKt - airspeedTape.viewKt / 2,
+  );
+  const visibleMaxKt = indicatedKt + airspeedTape.viewKt / 2;
+  const firstTickKt = Math.ceil(visibleMinKt / 5) * 5;
+  const lastTickKt = Math.floor(visibleMaxKt / 5) * 5;
+  const tickRightX = airspeedTape.x + airspeedTape.width;
+  const labelWidth = 37;
+  const labelGap = 9;
+
+  context.fillStyle = "#dce2e5";
+  context.strokeStyle = "#dce2e5";
+  context.lineWidth = 2;
+  context.textAlign = "right";
+  context.textBaseline = "middle";
+  context.font =
+    "800 24px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+
+  for (let speedKt = firstTickKt; speedKt <= lastTickKt; speedKt += 5) {
+    if (speedKt < airspeedRangeLimits.minKt) {
+      continue;
+    }
+
+    const isMajorTick = speedKt % 10 === 0;
+    const y = speedToY(speedKt);
+    const tickLength = isMajorTick ? 20 : 12;
+    const tickLeftX = tickRightX - tickLength;
+
+    context.beginPath();
+    context.moveTo(tickLeftX, y);
+    context.lineTo(tickRightX, y);
+    context.stroke();
+
+    if (isMajorTick) {
+      context.fillText(`${speedKt}`, tickLeftX - labelGap, y, labelWidth);
+    }
+  }
+}
+
+function drawAirspeedTrendVector(
+  context: CanvasRenderingContext2D,
+  speedToY: (speedKt: number) => number,
+  trendKt: number,
+  projectedKt: number,
+): void {
+  if (!Number.isFinite(trendKt) || Math.abs(trendKt) < 0.1) {
+    return;
+  }
+
+  const pointerY = airspeedTape.y + airspeedTape.height / 2;
+  const trendX = getAirspeedRangeStripX() + airspeedTape.rangeStripWidth + 4;
+  const projectedY = Math.max(
+    airspeedTape.y,
+    Math.min(airspeedTape.y + airspeedTape.height, speedToY(projectedKt)),
+  );
+
+  context.strokeStyle = "#ff4dff";
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(trendX, pointerY);
+  context.lineTo(trendX, projectedY);
+  context.stroke();
+}
+
+function drawAirspeedPointer(
+  context: CanvasRenderingContext2D,
+  indicatedKt: number,
+  projectedKt: number,
+): void {
+  const pointerY = airspeedTape.pointerY + airspeedTape.pointerHeight / 2;
+  const pointerTipX = airspeedTape.x + airspeedTape.width;
+  const pointerBodyRightX =
+    getAirspeedRangeStripX() - airspeedTape.pointerGapToRangeStrip;
+  const pointerX = pointerBodyRightX - airspeedTape.pointerWidth;
+  const pointerTop = airspeedTape.pointerY;
+  const pointerBottom = airspeedTape.pointerY + airspeedTape.pointerHeight;
+  const hasReachedVne = indicatedKt >= airspeedRangeLimits.vneKt;
+  const trendCrossesVne =
+    indicatedKt < airspeedRangeLimits.vneKt &&
+    projectedKt >= airspeedRangeLimits.vneKt;
+
+  context.save();
+  context.fillStyle = hasReachedVne ? "#b81723" : "#242A2B";
+  context.beginPath();
+  context.moveTo(pointerX, pointerTop);
+  context.lineTo(pointerBodyRightX, pointerTop);
+  context.lineTo(pointerTipX, pointerY);
+  context.lineTo(pointerBodyRightX, pointerBottom);
+  context.lineTo(pointerX, pointerBottom);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = trendCrossesVne ? "#f0dd37" : "#ffffff";
+  context.font =
+    "800 26px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+  context.textAlign = "right";
+  context.textBaseline = "middle";
+  context.fillText(
+    `${Math.round(indicatedKt)}`,
+    pointerBodyRightX - 3,
+    pointerY,
+    51,
+  );
+  context.restore();
+}
+
+function getAirspeedRangeStripX(): number {
+  return airspeedTape.x + airspeedTape.width - airspeedTape.rangeStripWidth;
 }
 
 function drawRollScale(
